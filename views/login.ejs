@@ -6,7 +6,7 @@
     <title>Login</title>
     <script>
         async function loginUser(event) {
-            event.preventDefault(); // Prevent the form from refreshing the page
+            event.preventDefault(); // Prevent form from refreshing the page
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -19,12 +19,13 @@
                     },
                     body: JSON.stringify({ email, password })
                 });
-                const data = await response.json();
 
+                const data = await response.json();
                 if (response.ok) {
                     // Store the token in localStorage
                     localStorage.setItem('token', data.token);
-                    window.location.href = '/trips/view'; // Redirect to the trips view page
+                    alert('Login successful! Redirecting to view trips...');
+                    window.location.href = '/trips/view'; // Redirect to view trips page
                 } else {
                     alert(data.msg || 'Login failed');
                 }
