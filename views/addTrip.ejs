@@ -4,10 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add a New Trip</title>
+    <script>
+        async function addTrip(event) {
+            event.preventDefault(); // Prevent page refresh
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('No token found, please log in.');
+                window.location.href = '/auth/login';
+                return;
+            }
+
+            const destination = document.getElementById('destination').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const activities = document.getElementById('activities').value.split(',');
+
+            try {
+                const response = await fetch('/trips', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ destination, startDate, endDate, activities })
+                });
+
+                if (response.ok) {
+                    alert('Trip added successfully!');
+                    window.location.href = '/trips/view'; // Redirect to view trips page
+                } else {
+                    alert('Failed to add trip');
+                }
+            } catch (error) {
+                console.error('Error adding trip:', error);
+                alert('An error occurred while adding the trip');
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Add a New Trip</h1>
-    <form action="/trips" method="POST">
+    <form onsubmit="addTrip(event)">
         <label for="destination">Destination:</label>
         <input type="text" id="destination" name="destination" required><br>
 
@@ -18,10 +56,9 @@
         <input type="date" id="endDate" name="endDate" required><br>
 
         <label for="activities">Activities (comma separated):</label>
-        <input type="text" id="activities" name="activities"><br>
+        <input type="text" id="activities" name="activities" required><br>
 
         <button type="submit">Add Trip</button>
     </form>
-    <a href="/trips/view">Back to All Trips</a>
 </body>
 </html>

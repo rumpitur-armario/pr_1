@@ -12,15 +12,18 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 // Middleware
 app.use(express.json());
-app.use('/auth', authRoutes);
+
 app.use('/trips', tripRoutes);
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');  // Set EJS as the template engine
+app.use(express.static('public'));
 
 // Basic route
+// Home page route
 app.get('/', (req, res) => {
-   res.render('home');  // Render 'home.ejs' as the homepage
+   res.render('index');
 });
+app.use('/auth', authRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

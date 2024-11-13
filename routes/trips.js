@@ -21,6 +21,12 @@ router.post('/', authMiddleware, async (req, res) => {
    }
 });
 
+router.get('/view', (req, res) => {
+    res.render('trips');
+});
+router.get('/add', (req, res) => {
+    res.render('addTrip');
+});
 // Get all trips for the logged-in user
 router.get('/', authMiddleware, async (req, res) => {
    try {
@@ -30,34 +36,49 @@ router.get('/', authMiddleware, async (req, res) => {
       res.status(500).json({ msg: 'Server error' });
    }
 });
+
+router.get('/:id', authMiddleware, async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
+        }
+        if (trip.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+        res.json(trip);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
 // Update an existing trip
 router.put('/:id', authMiddleware, async (req, res) => {
-   const { destination, startDate, endDate, activities } = req.body;
-   
-   try {
-       let trip = await Trip.findById(req.params.id);
-       
-       // Check if trip exists and if the user owns it
-       if (!trip) {
-           return res.status(404).json({ msg: 'Trip not found' });
-       }
+    try {
+        const { destination, startDate, endDate, activities } = req.body;
+        let trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
+        }
+        if (trip.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
 
-       if (trip.user.toString() !== req.user.id) {
-           return res.status(401).json({ msg: 'Not authorized' });
-       }
+        trip = await Trip.findByIdAndUpdate(req.params.id, {
+            destination,
+            startDate,
+            endDate,
+            activities
+        }, { new: true });
 
-       // Update trip fields
-       trip.destination = destination || trip.destination;
-       trip.startDate = startDate || trip.startDate;
-       trip.endDate = endDate || trip.endDate;
-       trip.activities = activities || trip.activities;
-
-       // Save updated trip
-       await trip.save();
-       res.json(trip);
-   } catch (err) {
-       res.status(500).json({ msg: 'Server error' });
-   }
+        res.json(trip);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+router.get('/edit/:id', (req, res) => {
+    res.render('editTrip', { tripId: req.params.id });
 });
 
 // Delete an existing trip
