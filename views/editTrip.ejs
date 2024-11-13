@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Trip</title>
+</head>
+<body>
+    <h1>Edit Trip</h1>
+    <form action="/trips/<%= trip._id %>?_method=PUT" method="POST">
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" value="<%= trip.destination %>" required><br>
+
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" value="<%= trip.startDate.toISOString().substring(0, 10) %>" required><br>
+
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate" value="<%= trip.endDate.toISOString().substring(0, 10) %>" required><br>
+
+        <label for="activities">Activities (comma separated):</label>
+        <input type="text" id="activities" name="activities" value="<%= trip.activities.join(", ") %>"><br>
+
+        <button type="submit">Update Trip</button>
+    </form>
+    <a href="/trips/view">Back to All Trips</a>
+</body>
+</html>

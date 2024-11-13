@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Trips</title>
+</head>
+<body>
+    <h1>All Trips</h1>
+
+    <!-- Button to Add a New Trip -->
+    <a href="/trips/add">Add a New Trip</a>
+    
+    <!-- List of Trips -->
+    <ul>
+        <% trips.forEach(trip => { %>
+            <li>
+                <strong><%= trip.destination %></strong> 
+                (from <%= new Date(trip.startDate).toLocaleDateString() %> to <%= new Date(trip.endDate).toLocaleDateString() %>)
+                <ul>
+                    <li>Activities: <%= trip.activities.join(", ") %></li>
+                </ul>
+                <a href="/trips/edit/<%= trip._id %>">Edit</a>
+                <form action="/trips/<%= trip._id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>

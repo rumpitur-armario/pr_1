@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a New Trip</title>
+</head>
+<body>
+    <h1>Add a New Trip</h1>
+    <form action="/trips" method="POST">
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" required><br>
+
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" required><br>
+
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate" required><br>
+
+        <label for="activities">Activities (comma separated):</label>
+        <input type="text" id="activities" name="activities"><br>
+
+        <button type="submit">Add Trip</button>
+    </form>
+    <a href="/trips/view">Back to All Trips</a>
+</body>
+</html>
