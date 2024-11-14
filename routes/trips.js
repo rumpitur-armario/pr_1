@@ -136,5 +136,17 @@ router.get('/edit/:id', authMiddleware, async (req, res) => {
    }
 });
 
+router.get('/map', authMiddleware, async (req, res) => {
+    try {
+        // Fetch all trips from the database for the logged-in user
+        const trips = await Trip.find({ user: req.user.id });
+
+        // Send trips data to the EJS template
+        res.render('map', { trips });
+    } catch (err) {
+        console.error('Error fetching trips:', err);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
 
 module.exports = router;

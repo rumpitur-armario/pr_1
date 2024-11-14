@@ -10,65 +10,59 @@ router.get('/register', (req, res) => {
    res.render('register'); // This serves the register.ejs file
 });
 
+////////////////////////////
 router.post('/register', async (req, res) => {
-   try {
-       // Step 1: Extract fields from request body
-       const { username, email, password } = req.body;
+    try {
+        // Extract fields from request body
+        const { username, email, password } = req.body;
 
-       // Step 2: Check if all fields are provided
-       if (!username || !email || !password) {
-           console.log('Missing fields in request body:', req.body);
-           return res.status(400).json({ msg: 'All fields are required' });
-       }
+        // Validate that all fields are present
+        if (!username || !email || !password) {
+            return res.status(400).json({ msg: 'All fields are required' });
+        }
 
-       console.log('Register request received:', req.body);
+        console.log('Register request received:', req.body);
 
-       // Step 3: Check if user already exists
-       let user = await User.findOne({ email });
-       if (user) {
-           console.log('User already exists:', email);
-           return res.status(400).json({ msg: 'User already exists' });
-       }
+        // Check if user already exists
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
 
-       // Step 4: Trim the password to remove any extra spaces
-       const trimmedPassword = password.trim();
+        // Step 1: Trim the password to remove any unnecessary spaces
+        const trimmedPassword = password.trim();
+        console.log('Trimmed password:', trimmedPassword);
 
-       // Step 5: Hash the password
-       console.log('Hashing password...');
-       const salt = await bcrypt.genSalt(10);
-       const hashedPassword = await bcrypt.hash(trimmedPassword, salt);
-       console.log('Password hashed successfully:', hashedPassword);
+        // Step 2: Hash the password once
+        console.log('Hashing password...');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(trimmedPassword, salt);
+        console.log('Password hashed successfully:', hashedPassword);
 
-       // Step 6: Create a new user instance with the hashed password
-       user = new User({
-           username,
-           email,
-           password: hashedPassword // Use the hashed password here
-       });
+        // Step 3: Create a new user instance with the hashed password
+        user = new User({
+            username,
+            email,
+            password: hashedPassword // Save the hashed password now
+        });
 
-       // Step 7: Save the user to MongoDB
-       await user.save();
-       console.log('User saved successfully:', user);
+        // Log before saving to MongoDB
+        console.log('Before saving to DB, user object is:', user);
 
-       // Step 8: Generate a JWT token for the newly registered user
-       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Step 4: Save user to MongoDB
+        await user.save();
+        console.log('User saved successfully with hashed password:', user);
 
-       // Optional Step 9: Save token to the database (optional)
-       const tokenDocument = new Token({
-           userId: user._id,
-           token: token
-       });
-       await tokenDocument.save();
-       console.log('Token saved successfully:', tokenDocument);
+        // Step 5: Generate a JWT token for the newly registered user
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-       // Step 10: Send response with the token
-       res.status(201).json({ token });
-   } catch (err) {
-       console.error('Error during registration:', err.message);
-       res.status(500).json({ msg: 'Server error' });
-   }
+        // Step 6: Send the response with the token
+        res.status(201).json({ token });
+    } catch (err) {
+        console.error('Error during registration:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
 });
-
 
 
 
