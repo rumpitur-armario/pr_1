@@ -54,7 +54,7 @@ router.post('/register', async (req, res) => {
         console.log('User saved successfully with hashed password:', user);
 
         // Step 5: Generate a JWT token for the newly registered user
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         // Step 6: Send the response with the token
         res.status(201).json({ token });

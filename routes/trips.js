@@ -59,7 +59,25 @@ router.get('/', authMiddleware, async (req, res) => {
        res.status(500).json({ msg: 'Server error' });
    }
 });
+router.get('/map', authMiddleware, async (req, res) => {
+    try {
+        console.log('Authenticated user ID:', req.user.id);
 
+        // Fetch trips from the database for the logged-in user
+        const trips = await Trip.find({ user: req.user.id });
+
+        if (!trips || trips.length === 0) {
+            console.log('No trips found for user:', req.user.id);
+        } else {
+            console.log('Fetched trips:', trips);
+        }
+
+        res.json({ trips });
+    } catch (err) {
+        console.error('Error fetching trips:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
 // Get a specific trip by ID (JSON)
 router.get('/:id', authMiddleware, async (req, res) => {
    try {
@@ -124,14 +142,4 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // Map route to display trips on the map (JSON)
-router.get('/map', authMiddleware, async (req, res) => {
-   try {
-       const trips = await Trip.find({ user: req.user.id });
-       res.json({ trips });
-   } catch (err) {
-       console.error('Error fetching trips:', err.message);
-       res.status(500).json({ msg: 'Server error' });
-   }
-});
-
 module.exports = router;

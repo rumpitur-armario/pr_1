@@ -3,48 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Trip Map</title>
+    <title>Trip Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         #map {
+            height: 600px; /* Adjust the height as needed */
             width: 100%;
-            height: 500px;
         }
     </style>
 </head>
 <body>
-    <h1>Your Trip Map</h1>
+    <h1>Map of Your Trips</h1>
     <div id="map"></div>
+
     <script>
         // Initialize the map and set its view to a default location
-        const map = L.map('map').setView([0, 0], 2); // Starting position and zoom level
+        const map = L.map('map').setView([48.8566, 2.3522], 5); // Default center at Paris
 
-        // Add the OpenStreetMap tile layer
+        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Fetch trips data from the server and plot them on the map
-        fetch('/trips/map')
-            .then(response => response.json())
+        // Wait for the DOM to be fully loaded before executing
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the token from localStorage
+            const token = localStorage.getItem('token');
+    
+            if (!token) {
+                console.error('No token found. Please log in.');
+                alert('No token found. Please log in to view the map.');
+                return;
+            }
+    
+            console.log('Using token:', token); // Add this line to check token retrieval
+    
+            // Fetch trips data with the Authorization header
+            fetch('/trips/map', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch trips data');
+                }
+                return response.json();
+            })
             .then(data => {
-                const trips = data.trips;
-                trips.forEach(trip => {
-                    const { coordinates } = trip;
-
-                    // Add a marker for each trip
-                    if (coordinates && coordinates.latitude && coordinates.longitude) {
-                        L.marker([coordinates.latitude, coordinates.longitude])
-                            .addTo(map)
-                            .bindPopup(`<b>${trip.destination}</b><br>${trip.startDate} - ${trip.endDate}`);
-                    }
-                });
+                if (data.trips) {
+                    addMarkers(data.trips);
+                } else {
+                    console.error('No trips data available');
+                }
             })
             .catch(error => {
-                console.error('Error loading trips:', error);
+                console.error('Error fetching trips data:', error);
+                alert('Failed to load trips data. Please try again.');
             });
+        });
+    
+        // Function to add markers from trip data
+        function addMarkers(trips) {
+            trips.forEach(trip => {
+                if (trip.coordinates && trip.coordinates.latitude && trip.coordinates.longitude) {
+                    L.marker([trip.coordinates.latitude, trip.coordinates.longitude])
+                        .addTo(map)
+                        .bindPopup(`<b>${trip.destination}</b><br>From: ${trip.startDate}<br>To: ${trip.endDate}`)
+                        .openPopup();
+                }
+            });
+        }
     </script>
 </body>
 </html>
