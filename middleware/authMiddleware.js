@@ -4,6 +4,8 @@ const Token = require('../models/Token');
 const authMiddleware = async (req, res, next) => {
     try {
         // Extract the Authorization header
+        console.log('Request headers:', req.headers);
+
         const authHeader = req.header('Authorization');
         if (!authHeader) {
             console.log('No Authorization header found.');

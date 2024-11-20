@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trip Map</title>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css' rel='stylesheet' />
+    <title>My Trip Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         #map {
             width: 100%;
@@ -13,52 +14,37 @@
     </style>
 </head>
 <body>
-    <h1>Trip Map</h1>
+    <h1>Your Trip Map</h1>
     <div id="map"></div>
-
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js'></script>
-
     <script>
-        // Your Mapbox access token
-        mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Replace with your actual Mapbox access token
+        // Initialize the map and set its view to a default location
+        const map = L.map('map').setView([0, 0], 2); // Starting position and zoom level
 
-        const map = new mapboxgl.Map({
-            container: 'map', // Container ID
-            style: 'mapbox://styles/mapbox/streets-v11', // Style URL
-            center: [2.3522, 48.8566], // Default center position [lng, lat]
-            zoom: 12 // Default zoom level
-        });
+        // Add the OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-        // Fetch trip data from the backend using the JWT token
-        const token = localStorage.getItem('token'); // Assume token is saved in local storage
-
-        if (token) {
-            fetch('/trips/map', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
+        // Fetch trips data from the server and plot them on the map
+        fetch('/trips/map')
             .then(response => response.json())
             .then(data => {
-                console.log('Trips data:', data);
+                const trips = data.trips;
+                trips.forEach(trip => {
+                    const { coordinates } = trip;
 
-                // Example: Add markers to the map using the fetched trips data
-                data.trips.forEach(trip => {
-                    if (trip.coordinates) {
-                        new mapboxgl.Marker()
-                            .setLngLat([trip.coordinates.longitude, trip.coordinates.latitude])
-                            .setPopup(new mapboxgl.Popup().setText(`Trip to ${trip.destination}`))
-                            .addTo(map);
+                    // Add a marker for each trip
+                    if (coordinates && coordinates.latitude && coordinates.longitude) {
+                        L.marker([coordinates.latitude, coordinates.longitude])
+                            .addTo(map)
+                            .bindPopup(`<b>${trip.destination}</b><br>${trip.startDate} - ${trip.endDate}`);
                     }
                 });
             })
             .catch(error => {
-                console.error('Error fetching trips:', error);
+                console.error('Error loading trips:', error);
             });
-        } else {
-            console.error('No token found. Please log in.');
-        }
     </script>
 </body>
 </html>

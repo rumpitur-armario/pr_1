@@ -3,62 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add a New Trip</title>
-    <script>
-        async function addTrip(event) {
-            event.preventDefault(); // Prevent page refresh
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('No token found, please log in.');
-                window.location.href = '/auth/login';
-                return;
-            }
-
-            const destination = document.getElementById('destination').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const activities = document.getElementById('activities').value.split(',');
-
-            try {
-                const response = await fetch('/trips', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ destination, startDate, endDate, activities })
-                });
-
-                if (response.ok) {
-                    alert('Trip added successfully!');
-                    window.location.href = '/trips/view'; // Redirect to view trips page
-                } else {
-                    alert('Failed to add trip');
-                }
-            } catch (error) {
-                console.error('Error adding trip:', error);
-                alert('An error occurred while adding the trip');
-            }
-        }
-    </script>
+    <title>Add Trip</title>
 </head>
 <body>
     <h1>Add a New Trip</h1>
-    <form onsubmit="addTrip(event)">
+    <form id="addTripForm">
+        <!-- Destination Field -->
         <label for="destination">Destination:</label>
-        <input type="text" id="destination" name="destination" required><br>
+        <input type="text" id="destination" name="destination" required>
 
+        <!-- Latitude Field -->
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" required>
+
+        <!-- Longitude Field -->
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" required>
+
+        <!-- Start Date Field -->
         <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate" required><br>
+        <input type="date" id="startDate" name="startDate" required>
 
+        <!-- End Date Field -->
         <label for="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate" required><br>
+        <input type="date" id="endDate" name="endDate" required>
 
-        <label for="activities">Activities (comma separated):</label>
-        <input type="text" id="activities" name="activities" required><br>
+        <!-- Activities Field -->
+        <label for="activities">Activities:</label>
+        <input type="text" id="activities" name="activities">
 
-        <button type="submit">Add Trip</button>
+        <!-- Add Trip Button -->
+        <button type="button" onclick="addTrip()">Add Trip</button>
     </form>
+
+    <!-- JavaScript for Form Submission -->
+    <script>
+        function addTrip() {
+            // Get the token from local storage (assuming it's stored after login)
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                console.error('No token found. Please log in.');
+                return;
+            }
+
+            // Get form values
+            const destination = document.getElementById('destination').value;
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const activities = document.getElementById('activities').value;
+
+            // Prepare the data to send to the server
+            const tripData = {
+                destination,
+                coordinates: { latitude, longitude },
+                startDate,
+                endDate,
+                activities
+            };
+
+            // Make POST request to the server
+            fetch('/trips/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(tripData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg) {
+                    // Handle any errors returned from the server
+                    console.error(data.msg);
+                } else {
+                    // Redirect to the "View All Trips" page after successful submission
+                    console.log('Trip added successfully:', data);
+                    window.location.href = '/trips/view';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 </body>
 </html>
