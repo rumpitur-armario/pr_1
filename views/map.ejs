@@ -53,10 +53,11 @@
                 return response.json();
             })
             .then(data => {
-                if (data.trips) {
+                if (data.trips && data.trips.length > 0) {
                     addMarkers(data.trips);
                 } else {
                     console.error('No trips data available');
+                    alert('No trips available to display on the map.');
                 }
             })
             .catch(error => {
@@ -69,10 +70,20 @@
         function addMarkers(trips) {
             trips.forEach(trip => {
                 if (trip.coordinates && trip.coordinates.latitude && trip.coordinates.longitude) {
-                    L.marker([trip.coordinates.latitude, trip.coordinates.longitude])
+                    const marker = L.marker([trip.coordinates.latitude, trip.coordinates.longitude])
                         .addTo(map)
-                        .bindPopup(`<b>${trip.destination}</b><br>From: ${trip.startDate}<br>To: ${trip.endDate}`)
-                        .openPopup();
+                        .bindPopup(
+                            `<b>${trip.destination}</b><br>
+                             From: ${new Date(trip.startDate).toLocaleDateString()}<br>
+                             To: ${new Date(trip.endDate).toLocaleDateString()}`
+                        );
+
+                    // Optional: Open popup on load for each marker
+                    marker.on('click', function() {
+                        marker.openPopup();
+                    });
+                } else {
+                    console.error('Invalid coordinates for trip:', trip);
                 }
             });
         }

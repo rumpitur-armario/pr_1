@@ -1,6 +1,7 @@
 require('dotenv').config();  // Load environment variables from .env
 const express = require('express');
 const mongoose = require('mongoose');
+const session = require('express-session');
 const app = express();
 const tripRoutes = require('./routes/trips');
 const authRoutes = require('./routes/auth');
@@ -12,18 +13,28 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // Middleware for parsing URL-encoded bodies
+app.use(session({
+   secret: process.env.SESSION_SECRET,  // Use a strong secret key
+   resave: false,
+   saveUninitialized: false,
+   cookie: { secure: false }  // Set to 'true' if using HTTPS in production
+}));
 
-app.use('/trips', tripRoutes);
-app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');  // Set EJS as the template engine
+// Set the view engine to EJS
+app.set('view engine', 'ejs');
+
+// Serve static files
 app.use(express.static('public'));
 
-// Basic route
-// Home page route
+// Register routes
+app.use('/auth', authRoutes);    // Place auth routes before trips for authentication access
+app.use('/trips', tripRoutes);
+
+// Basic home page route
 app.get('/', (req, res) => {
    res.render('index');
 });
-app.use('/auth', authRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

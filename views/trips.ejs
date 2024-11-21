@@ -4,6 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Trips</title>
+    <!-- Bootstrap CSS for styling -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%; /* Ensures the body and html take full height */
+            margin: 0; /* Remove default margin */
+            display: flex;
+            flex-direction: column; /* Set main axis to vertical */
+        }
+        .content {
+            flex: 1; /* Push the footer to the bottom */
+        }
+        .container {
+            margin-top: 50px;
+            max-width: 1100px; /* Wider container for desktop website look */
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.02); /* Slightly enlarge card on hover for desktop feel */
+        }
+        .navbar {
+            margin-bottom: 20px;
+            padding: 15px 30px;
+        }
+        .add-trip-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+            border: 2px dashed #6c757d; /* Dashed line border */
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+            text-align: center;
+        }
+        .add-trip-card:hover {
+            background-color: #e9ecef; /* Light gray on hover */
+        }
+        .add-trip-icon {
+            font-size: 3em;
+            color: #6c757d;
+        }
+        .card-body h5 {
+            color: #007bff; /* Make the destination title more prominent */
+        }
+        .footer {
+            background: #343a40;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Trip Planner</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="content">
+        <div class="container">
+            <header class="mb-5">
+                <h2 class="text-center">All Your Trips</h2>
+                <p class="text-center text-muted">Manage all your trips from this dashboard. Add, edit, or delete trips as you plan your journey.</p>
+            </header>
+
+            <!-- All Trips Container -->
+            <div id="tripList" class="row">
+                <!-- Trip Cards will be appended here via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        &copy; 2024 Trip Planner. All Rights Reserved.
+    </footer>
+
+    <!-- Bootstrap JavaScript for better button interactions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script>
         async function loadTrips() {
             try {
@@ -24,22 +122,47 @@
                 if (response.ok) {
                     const trips = await response.json();
                     const tripList = document.getElementById('tripList');
-                    tripList.innerHTML = ''; // Clear existing trips
 
-                    // Display each trip with an Edit and Delete button
+                    // Clear the existing list of trips
+                    tripList.innerHTML = '';
+
+                    // Display each trip in a Bootstrap card
                     trips.forEach(trip => {
-                        const tripItem = document.createElement('li');
-                        tripItem.innerHTML = `
-                            <strong>${trip.destination}</strong> 
-                            (from ${new Date(trip.startDate).toLocaleDateString()} to ${new Date(trip.endDate).toLocaleDateString()})
-                            <ul>
-                                <li>Activities: ${trip.activities.join(", ")}</li>
-                            </ul>
-                            <a href="/trips/edit/${trip._id}">Edit</a>
-                            <button onclick="deleteTrip('${trip._id}')">Delete</button>
+                        const tripCard = document.createElement('div');
+                        tripCard.className = 'col-md-6 col-lg-4 mb-4';
+                        tripCard.innerHTML = `
+                            <div class="card" onclick="viewTrip('${trip._id}')">
+                                <div class="card-body">
+                                    <h5 class="card-title">${trip.destination}</h5>
+                                    <p class="card-text">
+                                        <strong>From:</strong> ${new Date(trip.startDate).toLocaleDateString()}<br>
+                                        <strong>To:</strong> ${new Date(trip.endDate).toLocaleDateString()}<br>
+                                        <strong>Activities:</strong> ${trip.activities.join(", ")}
+                                    </p>
+                                    <div class="d-flex justify-content-between">
+                                        <a href="/trips/edit/${trip._id}" class="text-primary" onclick="event.stopPropagation();">Edit</a>
+                                        <a href="javascript:void(0);" onclick="deleteTrip(event, '${trip._id}')" class="text-danger">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
                         `;
-                        tripList.appendChild(tripItem);
+                        tripList.appendChild(tripCard);
                     });
+
+                    // Add the "Add Trip" card at the end (on the right)
+                    const addTripCard = document.createElement('div');
+                    addTripCard.className = 'col-md-6 col-lg-4 mb-4';
+                    addTripCard.innerHTML = `
+                        <a href="/trips/add" class="text-decoration-none">
+                            <div class="card add-trip-card">
+                                <div class="add-trip-icon">
+                                    <span>+</span><br>
+                                    <small>Add Trip</small>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                    tripList.appendChild(addTripCard);
                 } else {
                     alert('Failed to load trips');
                 }
@@ -48,8 +171,24 @@
             }
         }
 
+        // Add JavaScript Function for Viewing a Trip
+        function viewTrip(tripId) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('No token found, please log in.');
+                window.location.href = '/auth/login';
+                return;
+            }
+            // Redirect to the view page with token attached
+            window.location.href = `/trips/view/${tripId}?token=${token}`;
+        }
+        
+
         // Add JavaScript Function for Deleting a Trip
-        async function deleteTrip(tripId) {
+        async function deleteTrip(event, tripId) {
+            event.preventDefault();  // Prevent the default link click behavior
+            event.stopPropagation(); // Stop the event from bubbling up to parent elements
+
             const token = localStorage.getItem('token');
             if (!token) {
                 alert('No token found, please log in.');
@@ -67,8 +206,7 @@
                     });
 
                     if (response.ok) {
-                        alert('Trip deleted successfully!');
-                        window.location.reload(); // Reload the page to show the updated list of trips
+                        loadTrips(); // Reload the trips list without reloading the whole page
                     } else {
                         alert('Failed to delete trip');
                     }
@@ -82,10 +220,5 @@
         // Load trips when the window is loaded
         window.onload = loadTrips;
     </script>
-</head>
-<body>
-    <h1>All Trips</h1>
-    <a href="/trips/add">Add a New Trip</a>
-    <ul id="tripList"></ul>
 </body>
 </html>

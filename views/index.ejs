@@ -4,34 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Trip Planner</title>
+    <!-- Bootstrap CSS for easier styling -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            text-align: center;
             font-family: Arial, sans-serif;
-            padding-top: 50px;
+            background: #87CEFA; /* Sky blue */
+            overflow: hidden; /* Hide clouds moving off-screen */
         }
-        .button-container {
-            margin-top: 20px;
+        .cloud {
+            position: absolute;
+            width: 400px; /* Bigger clouds */
+            height: 240px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.85;
         }
-        .button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background: #fff;
+            width: 300px; /* Make the extensions bigger too */
+            height: 200px;
+            border-radius: 50%;
+        }
+        .cloud:before {
+            top: -60px;
+            left: 50px;
+        }
+        .cloud:after {
+            top: 40px;
+            left: 150px;
+        }
+        .cloud.animate {
+            animation: moveClouds 30s linear infinite; /* Faster animation (twice as fast) */
+        }
+        @keyframes moveClouds {
+            from {
+                transform: translateX(-500px);
+            }
+            to {
+                transform: translateX(100vw);
+            }
+        }
+        .hero-container {
+            text-align: center;
+            padding-top: 100px;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px;
+            color: #000; /* Black color for text for better visibility */
+            z-index: 10; /* Bring hero section above clouds */
+            position: relative;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Trip Planner!</h1>
-    <p>Your journey starts here.</p>
+    <!-- Hero section for a welcoming look -->
+    <div class="hero-container">
+        <h1>Welcome to the Trip Planner!</h1>
+        <p>Your journey starts here. Join today and begin planning your next adventure!</p>
 
-    <div class="button-container">
-        <a href="/auth/register">
-            <button class="button">Sign Up</button>
-        </a>
-        <a href="/auth/login">
-            <button class="button">Login</button>
-        </a>
+        <div class="button-container">
+            <a href="/auth/register" class="btn btn-primary btn-lg button">Sign Up</a>
+            <a href="/auth/login" class="btn btn-secondary btn-lg button">Login</a>
+        </div>
     </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Generate a maximum of 2 clouds
+        const maxClouds = 2;
+        let cloudCount = 0;
+
+        function createCloud() {
+            if (cloudCount >= maxClouds) return;
+
+            // Create a new cloud div
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud animate';
+
+            // Ensure clouds do not overlap by randomizing their starting position at the top
+            let randomTop = getRandomTop();
+            cloud.style.top = `${randomTop}px`;
+
+            // Append to body
+            document.body.appendChild(cloud);
+            cloudCount++;
+
+            // Remove the cloud after it has moved off-screen and decrease the count
+            cloud.addEventListener('animationend', () => {
+                resetCloud(cloud);
+            });
+        }
+
+        // Function to reset the cloud after it leaves the screen
+        function resetCloud(cloud) {
+            // Move cloud back to starting position with a new random top position
+            cloud.style.top = `${getRandomTop()}px`;
+            cloud.style.left = `-500px`; // Start from outside the screen again
+        }
+
+        // Get a random top position for clouds
+        function getRandomTop() {
+            return Math.floor(Math.random() * (window.innerHeight / 2)); // Upper half of screen
+        }
+
+        // Generate clouds at random intervals
+        function generateClouds() {
+            setInterval(() => {
+                if (cloudCount < maxClouds) {
+                    createCloud();
+                }
+            }, Math.random() * 4000 + 1000); // Interval between 1s to 5s
+        }
+
+        // Start generating clouds once the document is ready
+        document.addEventListener('DOMContentLoaded', generateClouds);
+    </script>
 </body>
 </html>

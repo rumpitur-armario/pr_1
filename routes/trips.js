@@ -59,6 +59,8 @@ router.get('/', authMiddleware, async (req, res) => {
        res.status(500).json({ msg: 'Server error' });
    }
 });
+
+// Map route to display trips on the map (JSON)
 router.get('/map', authMiddleware, async (req, res) => {
     try {
         console.log('Authenticated user ID:', req.user.id);
@@ -78,6 +80,7 @@ router.get('/map', authMiddleware, async (req, res) => {
         res.status(500).json({ msg: 'Server error' });
     }
 });
+
 // Get a specific trip by ID (JSON)
 router.get('/:id', authMiddleware, async (req, res) => {
    try {
@@ -141,5 +144,23 @@ router.delete('/:id', authMiddleware, async (req, res) => {
    }
 });
 
-// Map route to display trips on the map (JSON)
+
+router.get('/view/:id', authMiddleware, async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
+        }
+        if (trip.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+        res.render('viewTrip', { trip });
+    } catch (err) {
+        console.error('Error fetching trip details:', err.message);
+        res.status(500).send('Server error');
+    }
+ });
+
+
+
 module.exports = router;

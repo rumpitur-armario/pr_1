@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Trip - <%= trip.destination %></title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%; /* Ensures the body and html take full height */
+            margin: 0; /* Remove default margin */
+            display: flex;
+            flex-direction: column; /* Set main axis to vertical */
+        }
+        .content {
+            flex: 1; /* Push the footer to the bottom */
+        }
+        body {
+            background: #f8f9fa; /* Light gray for a clean look */
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            max-width: 1100px; /* Wider container for desktop website look */
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .navbar {
+            margin-bottom: 20px;
+            padding: 15px 30px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background: #343a40;
+            color: #ffffff;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .btn {
+            margin-right: 10px; /* Spacing between buttons */
+        }
+        #map {
+            height: 400px; /* Set the height for the map container */
+            width: 100%; /* Full width to match the container */
+            margin-top: 20px; /* Space between trip details and the map */
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Trip Planner</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);" onclick="goToAllTrips()">View All Trips</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Trip Details Container -->
+    <div class="content">
+        <div class="container">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title"><%= trip.destination || "No destination provided" %></h3>
+                    <p class="card-text">
+                        <strong>From:</strong> <%= trip.startDate ? new Date(trip.startDate).toLocaleDateString() : "N/A" %><br>
+                        <strong>To:</strong> <%= trip.endDate ? new Date(trip.endDate).toLocaleDateString() : "N/A" %><br>
+                        <strong>Activities:</strong> <%= trip.activities.length ? trip.activities.join(", ") : "No activities planned" %><br>
+                        <% if (trip.coordinates) { %>
+                            <strong>Coordinates:</strong> Latitude: <%= trip.coordinates.latitude %>, Longitude: <%= trip.coordinates.longitude %>
+                        <% } %>
+                    </p>
+                    <a href="/trips/edit/<%= trip._id %>" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Edit Trip</a>
+                    <button onclick="goBackToTrips()" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to All Trips</button>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <% if (trip.coordinates) { %>
+            <div id="map"></div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        &copy; 2024 Trip Planner. All Rights Reserved.
+    </footer>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        function goBackToTrips() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('No token found, please log in.');
+                window.location.href = '/auth/login';
+                return;
+            }
+            // Redirect to the All Trips page with the token attached as a query parameter
+            window.location.href = `/trips/view?token=${token}`;
+        }
+
+        function goToAllTrips() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('No token found, please log in.');
+                window.location.href = '/auth/login';
+                return;
+            }
+            // Redirect to the All Trips page with the token attached as a query parameter
+            window.location.href = `/trips/view?token=${token}`;
+        }
+
+        // Render the Map with OpenStreetMap using Leaflet.js
+        <% if (trip.coordinates) { %>
+        const map = L.map('map', {
+            maxBounds: [
+                [-85, -180],  // South-West corner of the map viewable area
+                [85, 180]     // North-East corner of the map viewable area
+            ],
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false, // Prevent the map from repeating
+            minZoom: 2, // Minimum zoom level to ensure whole world is visible
+            maxZoom: 18 // Maximum zoom level for close-up detail
+        }).setView([<%= trip.coordinates.latitude %>, <%= trip.coordinates.longitude %>], 5);
+
+        // Fit map to show entire world initially to prevent excessive blank space
+        map.fitBounds([
+            [-85, -180],
+            [85, 180]
+        ]);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            noWrap: true // Prevents repeated tiles horizontally and vertically
+        }).addTo(map);
+
+        // Add marker to the map
+        L.marker([<%= trip.coordinates.latitude %>, <%= trip.coordinates.longitude %>])
+            .addTo(map)
+            .bindPopup('<b><%= trip.destination %></b>')
+            .openPopup();
+        <% } %>
+    </script>
+</body>
+</html>
