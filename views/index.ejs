@@ -3,125 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Trip Planner</title>
-    <!-- Bootstrap CSS for easier styling -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <title>Travel Planner</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
     <style>
+        /* General Layout */
         body {
             font-family: Arial, sans-serif;
-            background: #87CEFA; /* Sky blue */
-            overflow: hidden; /* Hide clouds moving off-screen */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensures footer sticks to the bottom */
         }
-        .cloud {
-            position: absolute;
-            width: 400px; /* Bigger clouds */
-            height: 240px;
-            background: #fff;
-            border-radius: 50%;
-            opacity: 0.85;
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: black;
+            color: white;
+            padding: 15px 20px;
         }
-        .cloud:before, .cloud:after {
-            content: '';
-            position: absolute;
-            background: #fff;
-            width: 300px; /* Make the extensions bigger too */
-            height: 200px;
-            border-radius: 50%;
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
         }
-        .cloud:before {
-            top: -60px;
-            left: 50px;
+
+        header nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: bold;
         }
-        .cloud:after {
-            top: 40px;
-            left: 150px;
+
+        header nav a:hover {
+            text-decoration: underline;
         }
-        .cloud.animate {
-            animation: moveClouds 30s linear infinite; /* Faster animation (twice as fast) */
-        }
-        @keyframes moveClouds {
-            from {
-                transform: translateX(-500px);
-            }
-            to {
-                transform: translateX(100vw);
-            }
-        }
-        .hero-container {
+
+        main {
+            flex: 1; /* Push footer to the bottom */
+            padding: 20px;
             text-align: center;
-            padding-top: 100px;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 30px;
-            color: #000; /* Black color for text for better visibility */
-            z-index: 10; /* Bring hero section above clouds */
-            position: relative;
+        }
+
+        footer {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Content Layout */
+        .travel-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .selectors {
+            flex: 1;
+            max-width: 300px;
+            padding-right: 20px;
+        }
+
+        .selectors label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .selectors select,
+        .selectors button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        #map {
+            flex: 2;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-left: 20px;
+        }
+
+        .selectors button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .selectors button:hover {
+            background-color: #0056b3;
+        }
+        #weather {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            text-align: left;
+        }
+
+        #weather img {
+            vertical-align: middle;
         }
     </style>
+    
 </head>
 <body>
-    <!-- Hero section for a welcoming look -->
-    <div class="hero-container">
-        <h1>Welcome to the Trip Planner!</h1>
-        <p>Your journey starts here. Join today and begin planning your next adventure!</p>
+    <!-- Top Banner -->
+    <header>
+        <h1>Travel Planner</h1>
+        <nav>
+            <a href="/auth/login">Login</a>
+            <a href="/auth/register">Signup</a>
+        </nav>
+    </header>
 
-        <div class="button-container">
-            <a href="/auth/register" class="btn btn-primary btn-lg button">Sign Up</a>
-            <a href="/auth/login" class="btn btn-secondary btn-lg button">Login</a>
+    <!-- Main Content -->
+    <main>
+        <h2>Where do you want to Travel?</h2>
+        <div class="travel-section">
+            <div class="selectors">
+                <label for="continent">Choose Continent:</label>
+                <select id="continent">
+                    <option value="">Select Continent</option>
+                </select>
+    
+                <label for="region">Choose Region:</label>
+                <select id="region">
+                    <option value="">Select Region</option>
+                </select>
+    
+                <label for="country">Choose Country:</label>
+                <select id="country" onchange="updateMap()">
+                    <option value="">Select Country</option>
+                </select>
+    
+                <!-- Button Below Dropdowns -->
+                <button id="bestTripPlan">Find the Best Trip Plan</button>
+    
+                <!-- Weather Information -->
+                <div id="weather"></div> <!-- Ensure this is present and correct -->
+            </div>
+    
+            <!-- Map Section -->
+            <div id="map"></div>
         </div>
-    </div>
+    </main>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <!-- Bottom Banner -->
+    <footer>
+        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
+    </footer>
+
     <script>
-        // Generate a maximum of 2 clouds
-        const maxClouds = 2;
-        let cloudCount = 0;
-
-        function createCloud() {
-            if (cloudCount >= maxClouds) return;
-
-            // Create a new cloud div
-            const cloud = document.createElement('div');
-            cloud.className = 'cloud animate';
-
-            // Ensure clouds do not overlap by randomizing their starting position at the top
-            let randomTop = getRandomTop();
-            cloud.style.top = `${randomTop}px`;
-
-            // Append to body
-            document.body.appendChild(cloud);
-            cloudCount++;
-
-            // Remove the cloud after it has moved off-screen and decrease the count
-            cloud.addEventListener('animationend', () => {
-                resetCloud(cloud);
-            });
+        let map, marker;
+        const apiKey = '36b2b02d4dec9ff1c82e156686ee0848'; // Replace with your actual key
+    
+        // Initialize the map
+        function initMap() {
+            map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                minZoom: 2,
+                maxZoom: 18
+            }).addTo(map);
         }
-
-        // Function to reset the cloud after it leaves the screen
-        function resetCloud(cloud) {
-            // Move cloud back to starting position with a new random top position
-            cloud.style.top = `${getRandomTop()}px`;
-            cloud.style.left = `-500px`; // Start from outside the screen again
+    
+        // Load continent, region, and country data
+        async function loadData() {
+            try {
+                const response = await axios.get('/api/data');
+                const locations = response.data;
+    
+                const continentSelect = document.getElementById('continent');
+                const regionSelect = document.getElementById('region');
+                const countrySelect = document.getElementById('country');
+    
+                Object.keys(locations).forEach(continent => {
+                    const option = document.createElement('option');
+                    option.value = continent;
+                    option.textContent = continent;
+                    continentSelect.appendChild(option);
+                });
+    
+                continentSelect.addEventListener('change', () => {
+                    const continent = continentSelect.value;
+                    regionSelect.innerHTML = '<option value="">Select Region</option>';
+                    countrySelect.innerHTML = '<option value="">Select Country</option>';
+    
+                    if (locations[continent]) {
+                        Object.keys(locations[continent]).forEach(region => {
+                            const option = document.createElement('option');
+                            option.value = region;
+                            option.textContent = region;
+                            regionSelect.appendChild(option);
+                        });
+                    }
+                });
+    
+                regionSelect.addEventListener('change', () => {
+                    const continent = continentSelect.value;
+                    const region = regionSelect.value;
+    
+                    countrySelect.innerHTML = '<option value="">Select Country</option>';
+    
+                    if (locations[continent] && locations[continent][region]) {
+                        locations[continent][region].forEach(country => {
+                            const option = document.createElement('option');
+                            option.value = country.name;
+                            option.textContent = country.name;
+                            countrySelect.appendChild(option);
+                        });
+                    }
+                });
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            }
         }
-
-        // Get a random top position for clouds
-        function getRandomTop() {
-            return Math.floor(Math.random() * (window.innerHeight / 2)); // Upper half of screen
+    
+        // Update the map and get weather information for the selected country
+        async function updateMap() {
+            const country = document.getElementById('country').value;
+            const continent = document.getElementById('continent').value;
+            const region = document.getElementById('region').value;
+    
+            if (!country || !continent || !region) {
+                console.log("Map update skipped: country, continent, or region not selected.");
+                return;
+            }
+    
+            const response = await axios.get('/api/data');
+            const locations = response.data;
+    
+            const selectedCountry = locations[continent][region].find(c => c.name === country);
+            if (!selectedCountry) {
+                console.log("Map update skipped: Selected country not found in data.");
+                return;
+            }
+    
+            const coords = selectedCountry.coordinates;
+            if (marker) {
+                map.removeLayer(marker);
+            }
+    
+            marker = L.marker(coords).addTo(map);
+            map.setView(coords, 5);
+    
+            console.log(`Updating map to ${country} at coordinates:`, coords);
+    
+            // Fetch weather information
+            await getWeather(coords[0], coords[1], country);
         }
-
-        // Generate clouds at random intervals
-        function generateClouds() {
-            setInterval(() => {
-                if (cloudCount < maxClouds) {
-                    createCloud();
+    
+        // Fetch weather information using OpenWeatherMap API
+        async function getWeather(lat, lon, countryName) {
+            try {
+                console.log(`Fetching weather data for: ${countryName} (${lat}, ${lon})`);
+                const weatherElement = document.getElementById('weather');
+    
+                if (!weatherElement) {
+                    console.error('Weather element not found.');
+                    return;
                 }
-            }, Math.random() * 4000 + 1000); // Interval between 1s to 5s
+    
+                const response = await axios.get(`/api/weather?lat=${lat}&lon=${lon}`);
+                const data = response.data;
+    
+                const temperature = data.main.temp;
+                const description = data.weather[0].description;
+                const icon = data.weather[0].icon;
+    
+                // Display the weather information
+                weatherElement.innerHTML = `
+                    <h3>Current Weather in ${countryName}:</h3>
+                    <p>Temperature: ${temperature}°C</p>
+                    <p>Condition: <img src="http://openweathermap.org/img/wn/${icon}.png" alt="${description}"> ${description}</p>
+                `;
+    
+                console.log("Weather data fetched successfully:", data);
+            } catch (err) {
+                console.error('Error fetching weather data:', err);
+                const weatherElement = document.getElementById('weather');
+                if (weatherElement) {
+                    weatherElement.innerHTML = `<p>Unable to fetch weather data at the moment.</p>`;
+                }
+            }
         }
-
-        // Start generating clouds once the document is ready
-        document.addEventListener('DOMContentLoaded', generateClouds);
+    
+        // Initialize the map and load data when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            loadData();
+        });
     </script>
+    
 </body>
 </html>

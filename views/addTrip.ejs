@@ -1,93 +1,351 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Trip</title>
+    <title>Add New Trip Route</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #000;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 70%;
+            margin: 40px auto;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button {
+            padding: 15px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            align-self: center;
+            width: 50%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .added-destinations {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .destination-item {
+            margin-bottom: 15px;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+            clear: both;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Add a New Trip</h1>
-    <form id="addTripForm">
-        <!-- Destination Field -->
-        <label for="destination">Destination:</label>
-        <input type="text" id="destination" name="destination" required>
+    <header class="navbar">
+        <div class="logo">
+            <a href="/">Travel Planner</a>
+        </div>
+        <nav>
+            <a href="/trips/view">View Trips</a> |
+            <a href="/trips/add">Add Trip</a> |
+            <a href="/auth/logout">Logout</a>
+        </nav>
+    </header>
 
-        <!-- Latitude Field -->
-        <label for="latitude">Latitude:</label>
-        <input type="text" id="latitude" name="latitude" required>
+    <div class="container">
+        <h1>Add New Trip Route</h1>
+        <form id="addTripForm">
+            <div>
+                <label for="tripName">Trip Route Name:</label>
+                <input type="text" id="tripName" name="tripName" placeholder="Enter the name of your trip route" required>
+            </div>
 
-        <!-- Longitude Field -->
-        <label for="longitude">Longitude:</label>
-        <input type="text" id="longitude" name="longitude" required>
+            <h2>Destination Information</h2>
+            <div>
+                <label for="continent">Continent:</label>
+                <select id="continent" name="continent" required>
+                    <option value="">Select Continent</option>
+                    <option value="Africa">Africa</option>
+                    <option value="Asia">Asia</option>
+                    <option value="Europe">Europe</option>
+                    <option value="North America">North America</option>
+                    <option value="South America">South America</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Antarctica">Antarctica</option>
+                </select>
+            </div>
 
-        <!-- Start Date Field -->
-        <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate" required>
+            <div>
+                <label for="country">Country:</label>
+                <select id="country" name="country" required>
+                    <option value="">Select Country</option>
+                </select>
+            </div>
 
-        <!-- End Date Field -->
-        <label for="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate" required>
+            <div>
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" placeholder="Enter city or click on the map" required>
+            </div>
 
-        <!-- Activities Field -->
-        <label for="activities">Activities:</label>
-        <input type="text" id="activities" name="activities">
+            <div id="map"></div>
 
-        <!-- Add Trip Button -->
-        <button type="button" onclick="addTrip()">Add Trip</button>
-    </form>
+            <div>
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+            </div>
 
-    <!-- JavaScript for Form Submission -->
+            <div>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </div>
+
+            <div>
+                <label for="activities">Activities:</label>
+                <textarea id="activities" name="activities" placeholder="Enter activities separated by commas (e.g., sightseeing, hiking)" rows="3"></textarea>
+            </div>
+
+            <button type="button" id="addDestinationButton">Add Destination to Trip</button>
+            <button type="submit">Save Trip Route</button>
+        </form>
+
+        <div class="added-destinations" id="addedDestinations">
+            <h2>Added Destinations</h2>
+            <div id="destinationList"></div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 Travel Planner. All rights reserved.
+    </footer>
+
     <script>
-        function addTrip() {
-            // Get the token from local storage (assuming it's stored after login)
-            const token = localStorage.getItem('token');
+        let destinations = [];
 
-            if (!token) {
-                console.error('No token found. Please log in.');
-                return;
+        // Initialize the map
+        const map = L.map('map').setView([20, 0], 2);
+        let marker;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Zoom to the selected continent
+        const continentCoordinates = {
+            "Africa": [1.3733, 32.2903],
+            "Asia": [34.0479, 100.6197],
+            "Europe": [54.5260, 15.2551],
+            "North America": [54.5260, -105.2551],
+            "South America": [-14.2350, -51.9253],
+            "Australia": [-25.2744, 133.7751],
+            "Antarctica": [-82.8628, 135.0000]
+        };
+
+        document.getElementById('continent').addEventListener('change', function () {
+            const continent = this.value;
+            if (continent && continentCoordinates[continent]) {
+                const [lat, lon] = continentCoordinates[continent];
+                map.setView([lat, lon], 3);
+                loadCountries(continent);
+            }
+        });
+
+        function loadCountries(continent) {
+            const countriesByContinent = {
+                "Africa": ["Egypt", "Nigeria", "South Africa", "Kenya"],
+                "Asia": ["China", "India", "Japan", "South Korea"],
+                "Europe": ["France", "Germany", "Italy", "Spain"],
+                "North America": ["Canada", "United States", "Mexico"],
+                "South America": ["Argentina", "Brazil", "Chile"],
+                "Australia": ["Australia"],
+                "Antarctica": ["N/A"]
+            };
+
+            const countrySelect = document.getElementById('country');
+            countrySelect.innerHTML = `<option value="">Select Country</option>`;
+
+            if (countriesByContinent[continent]) {
+                countriesByContinent[continent].forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country;
+                    option.text = country;
+                    countrySelect.appendChild(option);
+                });
+            }
+        }
+
+        map.on('click', function (e) {
+            if (marker) {
+                map.removeLayer(marker);
             }
 
-            // Get form values
-            const destination = document.getElementById('destination').value;
-            const latitude = document.getElementById('latitude').value;
-            const longitude = document.getElementById('longitude').value;
+            marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+
+            // Reverse geocode to get city name
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.address && (data.address.city || data.address.town || data.address.village)) {
+                        document.getElementById('city').value = data.address.city || data.address.town || data.address.village;
+                    } else {
+                        alert('Could not determine the city for this location. Please try a different spot.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching city data:', error);
+                });
+        });
+
+        document.getElementById('addDestinationButton').addEventListener('click', function () {
+            const continent = document.getElementById('continent').value;
+            const country = document.getElementById('country').value;
+            const city = document.getElementById('city').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const activities = document.getElementById('activities').value;
 
-            // Prepare the data to send to the server
-            const tripData = {
-                destination,
-                coordinates: { latitude, longitude },
+            if (!continent || !country || !city || !startDate || !endDate) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const newDestination = {
+                continent,
+                country,
+                city,
+                coordinates: marker ? marker.getLatLng() : map.getCenter(),
                 startDate,
                 endDate,
                 activities
             };
 
-            // Make POST request to the server
+            destinations.push(newDestination);
+            updateDestinationsList();
+        });
+
+        function updateDestinationsList() {
+            const list = document.getElementById('destinationList');
+            list.innerHTML = '';
+            destinations.forEach((destination, index) => {
+                const div = document.createElement('div');
+                div.className = 'destination-item';
+                div.innerHTML = `<strong>Destination ${index + 1}:</strong> ${destination.city}, ${destination.country} from ${destination.startDate} to ${destination.endDate}`;
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('addTripForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const tripName = document.getElementById('tripName').value;
+
+            const formData = {
+                tripName,
+                destinations
+            };
+
             fetch('/trips/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(tripData)
+                body: JSON.stringify(formData)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.msg) {
-                    // Handle any errors returned from the server
-                    console.error(data.msg);
-                } else {
-                    // Redirect to the "View All Trips" page after successful submission
-                    console.log('Trip added successfully:', data);
-                    window.location.href = '/trips/view';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
+                .then(response => {
+                    if (response.ok) {
+                        alert('Trip route added successfully!');
+                        window.location.href = '/trips/view';
+                    } else {
+                        alert('Failed to add trip route. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        });
     </script>
 </body>
+
 </html>

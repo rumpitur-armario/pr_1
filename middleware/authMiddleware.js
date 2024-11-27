@@ -4,7 +4,7 @@ const authMiddleware = async (req, res, next) => {
     try {
         console.log('Request Headers:', req.headers); // Logs all headers for debugging
 
-        // Extract Authorization header or query token
+        // Extract Authorization header, query token, or cookie token
         let token = req.header('Authorization');
         if (token) {
             const parts = token.split(' ');
@@ -15,6 +15,8 @@ const authMiddleware = async (req, res, next) => {
             token = parts[1];
         } else if (req.query.token) {
             token = req.query.token; // Support token in query parameter for convenience
+        } else if (req.cookies.token) {
+            token = req.cookies.token; // Support token in cookie for convenience
         }
 
         if (!token) {

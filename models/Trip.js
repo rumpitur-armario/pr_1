@@ -1,17 +1,23 @@
 const mongoose = require('mongoose');
 
-const tripSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    destination: String,
+const destinationSchema = new mongoose.Schema({
+    city: { type: String, required: true },
     coordinates: {
-        latitude: Number,
-        longitude: Number
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true }
     },
-    startDate: Date,
-    endDate: Date,
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
     activities: [String]
 });
 
-const Trip = mongoose.model('Trip', tripSchema);
+const tripSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    tripName: { type: String, required: true },
+    destinations: [{ city: String, country: String }],
+    startDate: Date,
+    endDate: Date,
+    activities: [String],
+});
 
-module.exports = Trip;
+module.exports = mongoose.model('Trip', tripSchema);

@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
         console.log('User saved successfully with hashed password:', user);
 
         // Generate a JWT token for the newly registered user
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '70d' });
 
         // Store token in session
         req.session.token = token;  // <-- Store the token in session
@@ -64,12 +64,13 @@ router.get('/login', (req, res) => {
 });
 
 // User Login
+// User Login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
- 
+
     try {
         console.log('Login request received:', req.body);
- 
+
         // Find the user by email
         const user = await User.findOne({ email });
         if (!user) {
@@ -77,7 +78,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
         console.log('User found:', user);
- 
+
         // Compare the provided password with the hashed password in the database
         console.log('Comparing passwords...');
         const isMatch = await bcrypt.compare(password, user.password);
@@ -86,29 +87,26 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
         console.log('Password matches');
- 
+
         // Generate a JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
- 
-        // Store token in session
-        req.session.token = token;  // <-- This line stores the token in the session
- 
-        // Save token in the database (optional)
-        const tokenDocument = new Token({
-            userId: user._id,
-            token: token
+
+        // Set the token as an HTTP-only cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+            maxAge: 3600000 // Cookie will expire in 1 hour
         });
-        await tokenDocument.save();
-        console.log('Token saved successfully:', tokenDocument);
- 
-        // Optionally send the token in response for client-side use
-        res.json({ token });
+
+        // Optionally send a success message
+        res.status(200).json({ msg: 'Login successful' });
+
     } catch (err) {
         console.error('Error during login:', err.message);
         res.status(500).json({ msg: 'Server error' });
     }
- });
- 
+});
+
 
 
 

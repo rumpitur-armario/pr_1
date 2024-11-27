@@ -4,9 +4,16 @@ const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Render all trips page (No middleware)
-router.get('/view', (req, res) => {
-   res.render('trips');
+router.get('/view', authMiddleware, async (req, res) => {
+    try {
+        const trips = await Trip.find({ user: req.user.id }); // Fetch trips from the database
+        res.render('trips', { trips }); // Pass trips to the EJS view
+    } catch (err) {
+        console.error('Error fetching trips:', err.message);
+        res.status(500).send('Server error');
+    }
 });
+
 
 // Render the form to add a new trip (No middleware)
 router.get('/add', (req, res) => {
@@ -28,27 +35,31 @@ router.get('/map-view', (req, res) => {
 // Create a new trip (POST)
 router.post('/add', authMiddleware, async (req, res) => {
     try {
-        const { destination, coordinates, startDate, endDate, activities } = req.body;
- 
-        if (!destination || !coordinates || !coordinates.latitude || !coordinates.longitude || !startDate || !endDate) {
-            return res.status(400).json({ msg: 'Please provide all required fields including coordinates.' });
+        console.log('Received request:', req.body);  // Log request body
+
+        const { tripName, destinations } = req.body;
+
+        // Validate input data
+        if (!tripName || !destinations || destinations.length === 0) {
+            return res.status(400).json({ msg: 'Please provide all required fields.' });
         }
- 
+
+        // Create and save the trip
         const newTrip = new Trip({
             user: req.user.id,
-            destination,
-            coordinates,
-            startDate,
-            endDate,
-            activities: activities.split(',').map(activity => activity.trim())
+            tripName,
+            destinations
         });
- 
+
         const savedTrip = await newTrip.save();
         res.status(201).json(savedTrip);
     } catch (err) {
+        console.error('Error while adding trip:', err.message);
         res.status(500).json({ msg: 'Server error' });
     }
- });
+});
+
+
 
 // Get all trips for the logged-in user (JSON)
 router.get('/', authMiddleware, async (req, res) => {
@@ -154,7 +165,7 @@ router.get('/view/:id', authMiddleware, async (req, res) => {
         if (trip.user.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'Not authorized' });
         }
-        res.render('viewTrip', { trip });
+        res.render('trips', { trips: trips });
     } catch (err) {
         console.error('Error fetching trip details:', err.message);
         res.status(500).send('Server error');
