@@ -14,8 +14,10 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Ensures footer sticks to the bottom */
+            min-height: 100vh;
             background: #f8f9fa;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         header {
@@ -44,9 +46,11 @@
         }
 
         main {
-            flex: 1; /* Push footer to the bottom */
+            flex: 1;
             padding: 20px;
             text-align: left;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         footer {
@@ -54,6 +58,10 @@
             color: white;
             text-align: center;
             padding: 15px;
+            width: 100%;
+            margin-top: auto;
+            margin-bottom: 0;
+            position: relative;
         }
 
         footer p {
@@ -64,7 +72,7 @@
         .form-container {
             max-width: 600px;
             margin: 50px auto;
-            padding: 30px;
+            
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #fff;
@@ -83,33 +91,33 @@
 
     <!-- Main Content -->
     <main>
-        <div class="form-container">
-            <h3 class="text-center">Sign Up</h3>
-            <form onsubmit="registerUser(event)">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email address</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Sign Up</button>
-                </div>
-            </form>
-            <div class="mt-3 text-center">
-                <a href="/auth/login">Already have an account? Login here</a>
+        <div style="max-width: 600px; margin: 50px auto; ">
+        <h3 class="text-center">Sign Up</h3>
+        <form onsubmit="registerUser(event)">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
             </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+            </div>
+        </form>
+        </div>
+        <div class="mt-3 text-center">
+            <a href="/auth/login">Already have an account? Login here</a>
         </div>
     </main>
 
     <!-- Bottom Banner -->
-    <footer>
+    <footer style="position: fixed; bottom: 0; left: 0; right: 0; background-color: black; color: white; text-align: center; padding: 15px; width: 100%; margin: 0;">
         <p>&copy; 2024 Travel Planner. All rights reserved.</p>
     </footer>
 

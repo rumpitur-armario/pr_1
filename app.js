@@ -9,9 +9,10 @@ const tripRoutes = require('./routes/trips');
 const authRoutes = require('./routes/auth');
 const locationsRoutes = require('./routes/Locations');
 const axios = require('axios');
-
+const authMiddleware = require('./middleware/authMiddleware');
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+const methodOverride = require('method-override');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -19,6 +20,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
    .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
+app.use(methodOverride('_method')); 
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // Middleware for parsing URL-encoded bodies
@@ -29,7 +31,7 @@ app.use(session({
    cookie: { secure: process.env.NODE_ENV === 'production' }  // Set to 'true' if using HTTPS in production
 }));
 app.use('/api', locationsRoutes);
-
+app.get('/my-trip', authMiddleware, async (req, res) => { /*...*/ });
 app.get('/api/weather', async (req, res) => {
    const { lat, lon } = req.query;
    const apiKey = process.env.OPENWEATHERMAP_API_KEY;  // Use the environment variable for the API key
@@ -49,6 +51,19 @@ app.set('view engine', 'ejs');
 // Register routes
 app.use('/auth', authRoutes);    // Place auth routes before trips for authentication access
 app.use('/trips', tripRoutes);
+app.use('/data', express.static('data'));
+app.get('/my-trip', authMiddleware, async (req, res) => {
+   try {
+       console.log('User ID from session:', req.user?.id); // Ensure user ID is present
+       const trips = await Trip.find({ user: req.user.id }); // Fetch trips for logged-in user
+       console.log('Fetched trips:', trips); // Log fetched trips
+       res.render('myTrip', { trips }); // Pass trips to EJS
+   } catch (err) {
+       console.error('Error in /my-trip route:', err.message);
+       res.status(500).send('Server error');
+   }
+});
+
 
 // Basic home page route
 app.get('/', (req, res) => {

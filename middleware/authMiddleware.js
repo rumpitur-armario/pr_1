@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Ensure the User model is imported
 
 const authMiddleware = async (req, res, next) => {
     try {
@@ -30,8 +31,15 @@ const authMiddleware = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Token verified successfully:', decoded);
 
+        // Fetch full user details from the database
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            console.log('User not found for token:', decoded.id);
+            return res.status(401).json({ msg: 'User not found' });
+        }
+
         // Attach user information to the request
-        req.user = decoded;
+        req.user = user; // Attach the full user record
         console.log('User authenticated successfully:', req.user);
         
         next();

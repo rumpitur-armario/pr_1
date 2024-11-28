@@ -1,50 +1,94 @@
 {
     "Asia": {
+        "South Asia": [
+            {"name": "India", "coordinates": [28.6139, 77.2090]},
+            {"name": "Pakistan", "coordinates": [33.6844, 73.0479]},
+            {"name": "Nepal", "coordinates": [27.7172, 85.3240]},
+            {"name": "Bangladesh", "coordinates": [23.8103, 90.4125]},
+            {"name": "Sri Lanka", "coordinates": [6.9271, 79.8612]}
+        ],
         "Southeast Asia": [
-            { "name": "Indonesia", "coordinates": [-0.7893, 113.9213] },
-            { "name": "Thailand", "coordinates": [15.8700, 100.9925] },
-            { "name": "Vietnam", "coordinates": [14.0583, 108.2772] },
-            { "name": "Malaysia", "coordinates": [4.2105, 101.9758] }
+            {"name": "Thailand", "coordinates": [13.7563, 100.5018]},
+            {"name": "Vietnam", "coordinates": [21.0285, 105.8542]},
+            {"name": "Malaysia", "coordinates": [3.1390, 101.6869]},
+            {"name": "Philippines", "coordinates": [14.5995, 120.9842]},
+            {"name": "Singapore", "coordinates": [1.3521, 103.8198]}
         ],
         "East Asia": [
-            { "name": "China", "coordinates": [35.8617, 104.1954] },
-            { "name": "Japan", "coordinates": [36.2048, 138.2529] },
-            { "name": "South Korea", "coordinates": [35.9078, 127.7669] }
+            {"name": "China", "coordinates": [39.9042, 116.4074]},
+            {"name": "Japan", "coordinates": [35.6762, 139.6503]},
+            {"name": "South Korea", "coordinates": [37.5665, 126.9780]},
+            {"name": "North Korea", "coordinates": [39.0194, 125.7381]},
+            {"name": "Mongolia", "coordinates": [47.8860, 106.9057]}
+        ],
+        "Central Asia": [
+            {"name": "Kazakhstan", "coordinates": [51.1694, 71.4491]},
+            {"name": "Uzbekistan", "coordinates": [41.2995, 69.2401]},
+            {"name": "Turkmenistan", "coordinates": [37.9601, 58.3793]},
+            {"name": "Kyrgyzstan", "coordinates": [42.8746, 74.6126]},
+            {"name": "Tajikistan", "coordinates": [38.5598, 68.7866]}
         ]
     },
     "Europe": {
         "Western Europe": [
-            { "name": "France", "coordinates": [46.6034, 1.8883] },
-            { "name": "Germany", "coordinates": [51.1657, 10.4515] },
-            { "name": "United Kingdom", "coordinates": [55.3781, -3.4360] }
+            {"name": "France", "coordinates": [48.8566, 2.3522]},
+            {"name": "Germany", "coordinates": [52.5200, 13.4050]},
+            {"name": "Netherlands", "coordinates": [52.3676, 4.9041]},
+            {"name": "Belgium", "coordinates": [50.8503, 4.3517]},
+            {"name": "Switzerland", "coordinates": [46.9481, 7.4474]}
         ],
         "Eastern Europe": [
-            { "name": "Poland", "coordinates": [51.9194, 19.1451] },
-            { "name": "Ukraine", "coordinates": [48.3794, 31.1656] },
-            { "name": "Romania", "coordinates": [45.9432, 24.9668] }
-        ]
-    },
-    "North America": {
-        "Central America": [
-            { "name": "Mexico", "coordinates": [23.6345, -102.5528] },
-            { "name": "Guatemala", "coordinates": [15.7835, -90.2308] },
-            { "name": "Panama", "coordinates": [8.5379, -80.7821] }
+            {"name": "Russia", "coordinates": [55.7558, 37.6176]},
+            {"name": "Ukraine", "coordinates": [50.4501, 30.5236]},
+            {"name": "Poland", "coordinates": [52.2298, 21.0118]},
+            {"name": "Romania", "coordinates": [44.4268, 26.1025]},
+            {"name": "Czech Republic", "coordinates": [50.0755, 14.4378]}
         ],
-        "North America": [
-            { "name": "USA", "coordinates": [37.0902, -95.7129] },
-            { "name": "Canada", "coordinates": [56.1304, -106.3468] }
+        "Northern Europe": [
+            {"name": "United Kingdom", "coordinates": [51.5074, -0.1278]},
+            {"name": "Ireland", "coordinates": [53.3498, -6.2603]},
+            {"name": "Sweden", "coordinates": [59.3293, 18.0686]},
+            {"name": "Norway", "coordinates": [59.9139, 10.7522]},
+            {"name": "Denmark", "coordinates": [55.6761, 12.5683]}
+        ],
+        "Southern Europe": [
+            {"name": "Italy", "coordinates": [41.9028, 12.4964]},
+            {"name": "Spain", "coordinates": [40.4168, -3.7038]},
+            {"name": "Portugal", "coordinates": [38.7169, -9.1395]},
+            {"name": "Greece", "coordinates": [37.9838, 23.7275]},
+            {"name": "Croatia", "coordinates": [45.1000, 15.2000]}
         ]
     },
     "Africa": {
-        "Northern Africa": [
-            { "name": "Egypt", "coordinates": [26.8206, 30.8025] },
-            { "name": "Algeria", "coordinates": [28.0339, 1.6596] },
-            { "name": "Morocco", "coordinates": [31.7917, -7.0926] }
+        "North Africa": [
+            {"name": "Egypt", "coordinates": [30.0444, 31.2357]},
+            {"name": "Morocco", "coordinates": [34.0209, -6.8416]},
+            {"name": "Algeria", "coordinates": [36.7538, 3.0588]},
+            {"name": "Tunisia", "coordinates": [36.8065, 10.1815]},
+            {"name": "Libya", "coordinates": [32.8859, 13.1913]}
         ],
-        "Sub-Saharan Africa": [
-            { "name": "Nigeria", "coordinates": [9.0820, 8.6753] },
-            { "name": "South Africa", "coordinates": [-30.5595, 22.9375] },
-            { "name": "Kenya", "coordinates": [-1.2921, 36.8219] }
+        "East Africa": [
+            {"name": "Kenya", "coordinates": [-1.286389, 36.817223]},
+            {"name": "Tanzania", "coordinates": [-6.369028, 34.888822]},
+            {"name": "Ethiopia", "coordinates": [9.145, 40.489673]},
+            {"name": "Uganda", "coordinates": [1.373333, 32.290275]},
+            {"name": "Rwanda", "coordinates": [-1.940278, 29.873888]}
+        ]
+    },
+    "North America": {
+        "North America": [
+            {"name": "United States", "coordinates": [38.9078, -77.0369]},
+            {"name": "Canada", "coordinates": [45.4215, -75.6972]},
+            {"name": "Mexico", "coordinates": [19.4326, -99.1332]},
+            {"name": "Greenland", "coordinates": [64.1835, -51.7216]},
+            {"name": "Cuba", "coordinates": [23.1136, -82.3666]}
+        ],
+        "Central America": [
+            {"name": "Guatemala", "coordinates": [14.6349, -90.5069]},
+            {"name": "Honduras", "coordinates": [13.9447, -81.7091]},
+            {"name": "El Salvador", "coordinates": [13.7942, -88.8965]},
+            {"name": "Costa Rica", "coordinates": [9.7489, -83.7534]},
+            {"name": "Panama", "coordinates": [8.538, -80.7821]}
         ]
     }
 }

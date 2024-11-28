@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Travel Planner</a></h1>
+        <nav>
+            <a href="/trips/my-trip">Back to My Trips</a>
+            <a href="/auth/logout">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2><%= trip.tripName %></h2>
+
+        <!-- Delete Button for Big Plan -->
+        <form method="POST" action="/trips/my-trip/<%= trip._id %>?_method=DELETE" style="display:inline;">
+            <button type="submit">Delete This Trip</button>
+        </form>
+
+        <h3>Destinations</h3>
+        <div class="destination-list">
+            <% trip.destinations.forEach(destination => { %> 
+                <div class="destination-item">
+                    <h4><%= destination %></h4> <!-- Display the destination name -->
+                    <!-- Form to delete the destination -->
+                    <form method="POST" action="/trips/my-trip/<%= trip._id %>/destination/<%= destination._id %>?_method=DELETE" style="display:inline;">
+                        <button type="submit">Delete Destination</button>
+                    </form>
+
+                    <!-- Edit form for destination -->
+                    <form method="POST" action="/trips/my-trip/<%= trip._id %>/destination/<%= destination._id %>?_method=PUT">
+                        <label for="name">Edit Destination:</label>
+                        <input type="text" name="name" value="<%= destination.name %>" required>
+                        <button type="submit">Save Changes</button>
+                    </form>
+                </div>
+            <% }); %>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
+    </footer>
+</body>
+</html>
