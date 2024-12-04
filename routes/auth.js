@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
         console.log('Password matches');
 
         // Generate a JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '70d' });
 
         // Set the token as an HTTP-only cookie
         res.cookie('token', token, {

@@ -18,7 +18,7 @@
 
         header {
             display: flex;
-            justify-content: space-between; /* Align content to left and right */
+            justify-content: space-between;
             align-items: center;
             background-color: black;
             color: white;
@@ -37,7 +37,7 @@
 
         header nav {
             display: flex;
-            gap: 15px; /* Space between navigation links */
+            gap: 15px;
         }
 
         header nav a {
@@ -53,7 +53,6 @@
         main {
             flex: 1;
             padding: 20px;
-            text-align: center;
         }
 
         footer {
@@ -78,9 +77,8 @@
 
         .selectors {
             flex: 1;
-            max-width: 50%; /* Takes up half the screen */
+            max-width: 50%;
             padding-right: 20px;
-            text-align: left;
         }
 
         .selectors label {
@@ -99,23 +97,21 @@
             background-color: #fff;
         }
 
-        .weather-section {
-            margin-top: 20px;
-            font-size: 16px;
-            color: #333;
-            text-align: left;
+        .public-trips {
+            flex: 1;
+            max-width: 45%;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow-y: auto;
+            height: 400px;
         }
 
-        .blank-space {
-            flex: 1; /* Takes up the other half of the screen */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f5f5f5; /* Light gray background for visibility */
-            border: 1px dashed #ccc;
-            height: 200px; /* Placeholder height */
-            color: #666;
-            font-style: italic;
+        .public-trips .trip {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
         }
 
         .selectors button {
@@ -131,16 +127,14 @@
     </style>
 </head>
 <body>
-    <!-- Top Banner -->
     <header>
         <h1><a href="/">Travel Planner</a></h1>
-    <nav>
-        <a href="/trips/my-trip">My Trip</a> <!-- Updated link -->
-        <a href="/auth/logout">Logout</a>
-    </nav>
+        <nav>
+            <a href="/trips/my-trip">My Trip</a>
+            <a href="/auth/logout">Logout</a>
+        </nav>
     </header>
 
-    <!-- Main Content -->
     <main>
         <h2>Where do you want to Travel?</h2>
         <div class="travel-section">
@@ -156,39 +150,32 @@
                 </select>
 
                 <label for="country">Choose Country:</label>
-                <select id="country" onchange="updateWeather()">
+                <select id="country">
                     <option value="">Select Country</option>
                 </select>
 
-                <!-- Button Below Dropdowns -->
                 <button id="bestTripPlan">Find the Best Trip Plan</button>
 
-                <!-- Weather Section -->
                 <div id="weather" class="weather-section"></div>
             </div>
 
-            <div class="blank-space">
-                Placeholder for future content
+            <div class="public-trips">
+                <h3>Public Trips</h3>
+                <div id="publicTripsList">Select a country to see public trips.</div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Banner -->
     <footer>
         <p>&copy; 2024 Travel Planner. All rights reserved.</p>
     </footer>
 
     <script>
-        const apiKey = '36b2b02d4dec9ff1c82e156686ee0848'; // Replace with your OpenWeatherMap API key
+        const apiKey = '36b2b02d4dec9ff1c82e156686ee0848';
 
         document.addEventListener('DOMContentLoaded', function () {
-            fetch('/data/locations.json') // Fetch the data file
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+            fetch('/data/locations.json')
+                .then(response => response.json())
                 .then(data => {
                     const continentSelect = document.getElementById('continent');
                     const regionSelect = document.getElementById('region');
@@ -235,13 +222,42 @@
                         }
                     });
                 })
-                .catch(error => {
-                    console.error('Error fetching location data:', error);
-                    alert('Failed to load location data. Please try again later.');
-                });
+                .catch(error => console.error('Error fetching location data:', error));
+
+            document.getElementById('bestTripPlan').addEventListener('click', async () => {
+                const continent = document.getElementById('continent').value;
+                const region = document.getElementById('region').value;
+                const country = document.getElementById('country').value;
+
+                if (!continent || !region || !country) {
+                    alert('Please select all fields.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/trips/public-trips?country=${country}`);
+                    const trips = await response.json();
+
+                    const publicTripsList = document.getElementById('publicTripsList');
+                    publicTripsList.innerHTML = trips.length > 0
+                        ? trips.map(trip => `
+                            <div class="trip">
+                                <h4>${trip.tripName}</h4>
+                                <p>Destinations: ${trip.destinations.map(d => d.city).join(', ')}</p>
+                                <p>Likes: ${trip.likes}</p>
+                            </div>
+                        `).join('')
+                        : '<p>No public trips found for the selected location.</p>';
+
+                    // Update weather data after fetching trips
+                    updateWeather();
+                } catch (error) {
+                    console.error('Error fetching public trips:', error);
+                    alert('Failed to fetch public trips. Please try again later.');
+                }
+            });
         });
 
-        // Function to fetch and display weather data
         async function updateWeather() {
             const country = document.getElementById('country').value;
             if (!country) {
@@ -251,16 +267,11 @@
 
             try {
                 const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${country}&appid=${apiKey}&units=metric`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
                 const data = await response.json();
                 const temperature = data.main.temp;
                 const description = data.weather[0].description;
                 const icon = data.weather[0].icon;
 
-                // Update the DOM
                 document.getElementById('weather').innerHTML = `
                     <h3>Current Weather:</h3>
                     <p>Temperature: ${temperature}°C</p>
@@ -268,7 +279,7 @@
                 `;
             } catch (err) {
                 console.error('Error fetching weather data:', err);
-                document.getElementById('weather').innerHTML = '<p>Unable to fetch weather data at the moment.</p>';
+                document.getElementById('weather').innerHTML = '<p>Unable to fetch weather data.</p>';
             }
         }
     </script>

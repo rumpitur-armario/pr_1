@@ -3,96 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Trip</title>
-    <script>
-        async function loadTrip() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    alert('No token found, please log in.');
-                    window.location.href = '/auth/login';
-                    return;
-                }
-
-                const tripId = '<%= tripId %>'; // Get the tripId from the server-rendered value
-                const response = await fetch(`/trips/${tripId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const trip = await response.json();
-                    document.getElementById('destination').value = trip.destination;
-                    document.getElementById('startDate').value = trip.startDate.split('T')[0];
-                    document.getElementById('endDate').value = trip.endDate.split('T')[0];
-                    document.getElementById('activities').value = trip.activities.join(", ");
-                } else {
-                    alert('Failed to load trip details');
-                }
-            } catch (error) {
-                console.error('Error loading trip:', error);
-            }
+    <title>Trip Details with Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <style>
+        /* General Layout and Styling */
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
         }
 
-        async function editTrip(event) {
-            event.preventDefault(); // Prevent page refresh
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('No token found, please log in.');
-                window.location.href = '/auth/login';
-                return;
-            }
-
-            const tripId = '<%= tripId %>';
-            const destination = document.getElementById('destination').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const activities = document.getElementById('activities').value.split(',');
-
-            try {
-                const response = await fetch(`/trips/${tripId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ destination, startDate, endDate, activities })
-                });
-
-                if (response.ok) {
-                    alert('Trip updated successfully!');
-                    window.location.href = '/trips/view'; // Redirect to view trips page
-                } else {
-                    alert('Failed to update trip');
-                }
-            } catch (error) {
-                console.error('Error updating trip:', error);
-                alert('An error occurred while updating the trip');
-            }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: black;
+            color: white;
+            padding: 15px 20px;
         }
 
-        window.onload = loadTrip;
-    </script>
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+        }
+
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+        }
+
+        .left-pane, .right-pane {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .left-pane {
+            border-right: 1px solid #ddd;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        footer {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .destination-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .edit-form.active {
+            display: block;
+        }
+
+        .destination-item input,
+        .destination-item textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .edit-controls {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .trip-header button {
+            background-color: yellow;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .trip-header button:hover {
+            background-color: #ffc107;
+        }
+    </style>
 </head>
 <body>
-    <h1>Edit Trip</h1>
-    <form onsubmit="editTrip(event)">
-        <label for="destination">Destination:</label>
-        <input type="text" id="destination" name="destination" required><br>
+    <header>
+        <h1><a href="/">Travel Plannerdddddd</a></h1>
+        <nav>
+            <a href="/trips/my-trip">Back to My Trips</a>
+            <a href="/auth/logout">Logout</a>
+        </nav>
+    </header>
 
-        <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate" required><br>
+    <main>
+        <div class="left-pane">
+            <div class="trip-header">
+                <h2>Trip Details</h2>
+                <button id="editButton">Edit Trip</button>
+            </div>
 
-        <label for="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate" required><br>
+            <form id="editForm" class="edit-form" method="POST" action="/trips/edit/<%= trip._id %>">
+                <label for="tripName">Trip Name:</label>
+                <input type="text" id="tripName" name="tripName" value="<%= trip.tripName %>" required>
 
-        <label for="activities">Activities:</label>
-        <input type="text" id="activities" name="activities" required><br>
+                <h3>Destinations</h3>
+                <% trip.destinations.forEach((destination, index) => { %>
+                    <div class="destination-item">
+                        <label for="city-<%= index %>">City:</label>
+                        <input type="text" id="city-<%= index %>" name="destinations[<%= index %>][city]" value="<%= destination.city %>" required>
 
-        <button type="submit">Update Trip</button>
-    </form>
+                        <label for="country-<%= index %>">Country:</label>
+                        <input type="text" id="country-<%= index %>" name="destinations[<%= index %>][country]" value="<%= destination.country %>" required>
+
+                        <label for="startDate-<%= index %>">Start Date:</label>
+                        <input type="date" id="startDate-<%= index %>" name="destinations[<%= index %>][startDate]" value="<%= destination.startDate.toISOString().split('T')[0] %>" required>
+
+                        <label for="endDate-<%= index %>">End Date:</label>
+                        <input type="date" id="endDate-<%= index %>" name="destinations[<%= index %>][endDate]" value="<%= destination.endDate.toISOString().split('T')[0] %>" required>
+                    </div>
+                <% }); %>
+
+                <label for="public">Make Trip Public:</label>
+                <input type="checkbox" id="public" name="public" <%= trip.public ? 'checked' : '' %>>
+
+                <div class="edit-controls">
+                    <button type="submit">Save Changes</button>
+                    <button type="button" id="cancelEdit">Cancel</button>
+                </div>
+            </form>
+
+            <h3>Destinations</h3>
+            <div id="destination-list">
+                <% trip.destinations.forEach(destination => { %>
+                    <div class="destination-item">
+                        <h4><%= destination.city %>, <%= destination.country %></h4>
+                        <p><strong>Planned Dates:</strong> 
+                            <% if (destination.startDate && destination.endDate) { %>
+                                <%= new Date(destination.startDate).toLocaleDateString() %> - <%= new Date(destination.endDate).toLocaleDateString() %>
+                            <% } else { %>
+                                No dates provided
+                            <% } %>
+                        </p>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <div class="right-pane">
+            <div id="map"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // State persistence for back navigation
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+
+        // Toggle Edit Form
+        const editButton = document.getElementById('editButton');
+        const editForm = document.getElementById('editForm');
+        const cancelEdit = document.getElementById('cancelEdit');
+
+        editButton.addEventListener('click', () => {
+            editForm.classList.add('active');
+            editButton.style.display = 'none';
+            sessionStorage.setItem('editFormActive', 'true');
+        });
+
+        cancelEdit.addEventListener('click', () => {
+            editForm.classList.remove('active');
+            editButton.style.display = 'block';
+            sessionStorage.removeItem('editFormActive');
+        });
+
+        // Restore edit form state on page load
+        const isEditFormActive = sessionStorage.getItem('editFormActive') === 'true';
+        if (isEditFormActive) {
+            editForm.classList.add('active');
+            editButton.style.display = 'none';
+        }
+
+        // Initialize the map
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const destinationElements = document.querySelectorAll('.destination-item');
+        const latlngs = Array.from(destinationElements).map(dest => [
+            parseFloat(dest.dataset.lat),
+            parseFloat(dest.dataset.lon)
+        ]);
+
+        latlngs.forEach(latlng => {
+            if (latlng[0] && latlng[1]) {
+                L.marker(latlng).addTo(map);
+            }
+        });
+
+        if (latlngs.length > 0) {
+            map.fitBounds(latlngs);
+        }
+    </script>
 </body>
 </html>

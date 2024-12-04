@@ -1,0 +1,98 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9; /* Light background for the site */
+    color: #333; /* Dark text color for readability */
+}
+
+/* Top Banner */
+header {
+    background-color: black; /* Black background for the top banner */
+    color: white; /* White text for contrast */
+    text-align: center;
+    padding: 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+header nav {
+    margin-top: 10px;
+}
+
+header nav a {
+    color: white; /* White links */
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+header nav a:hover {
+    text-decoration: underline;
+}
+
+/* Bottom Banner */
+footer {
+    background-color: black; /* Black background for the footer */
+    color: white; /* White text */
+    text-align: center;
+    padding: 15px;
+}
+
+footer p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Main Content */
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.travel-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+/* Dropdown Selectors */
+.selectors {
+    flex: 1;
+    max-width: 300px;
+    padding-right: 20px;
+}
+
+.selectors label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.selectors select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+/* Map Section */
+#map {
+    flex: 2;
+    height: 500px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-left: 20px;
+}

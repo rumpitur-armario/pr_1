@@ -23,6 +23,24 @@ router.get('/my-trip', authMiddleware, async (req, res) => {
         res.status(500).send('Error fetching trips');
     }
 });
+// Fetch public trips for specific continent, region, and country
+router.get('/public-trips', async (req, res) => {
+    const { continent, region, country } = req.query;
+
+    try {
+        const trips = await Trip.find({
+            'destinations.continent': continent,
+            'destinations.region': region,
+            'destinations.country': country,
+            public: true,
+        }).sort({ likes: -1 });
+
+        res.json(trips);
+    } catch (err) {
+        console.error('Error fetching public trips:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
 
 // Render the form to add a new trip
 router.get('/add', authMiddleware, (req, res) => {
@@ -30,47 +48,91 @@ router.get('/add', authMiddleware, (req, res) => {
 });
 
 // Create a new trip (POST)
-// Create a new trip (POST)
+
 router.post('/add', authMiddleware, async (req, res) => {
     try {
-        // Log the incoming data to verify
-        console.log('Received trip data:', req.body);
-
-        const { tripName, destinations } = req.body;
+        const { tripName, destinations, isPublic } = req.body;
 
         if (!tripName || !destinations || destinations.length === 0) {
             return res.status(400).json({ msg: 'Please fill all fields.' });
         }
 
         const newTrip = new Trip({
-            user: req.user.id,  // Get the logged-in user's ID
+            user: req.user.id,
             tripName,
             destinations,
+            public: Boolean(isPublic), // Save the public flag as true/false
         });
 
-        // Save the new trip
         await newTrip.save();
-        console.log('Trip saved successfully');
-        
-        res.status(200).json({ msg: 'Trip route added successfully!' });
+        res.status(201).json({ msg: 'Trip created successfully!' });
     } catch (err) {
         console.error('Error adding trip:', err.message);
         res.status(500).json({ msg: 'Internal Server Error' });
     }
 });
 
+
+
 // Render a detailed view for a specific trip (Big Plan + Destinations)
-router.get('/my-trip/:id', authMiddleware, async (req, res) => {
+
+// Increment Likes
+router.post('/:id/like', authMiddleware, async (req, res) => {
     try {
         const trip = await Trip.findById(req.params.id);
-        if (!trip || trip.user.toString() !== req.user.id) {
-            return res.status(404).send('Trip not found');
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
         }
-        res.render('tripDetails', { trip });
+        trip.likes += 1;
+        await trip.save();
+        res.json({ likes: trip.likes }); // Respond with updated likes
     } catch (err) {
-        res.status(500).send('Error fetching trip details');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 });
+
+// Add Review
+router.post('/:id/review', authMiddleware, async (req, res) => {
+    const { comment } = req.body;
+    if (!comment || comment.trim() === '') {
+        return res.status(400).json({ msg: 'Review cannot be empty' });
+    }
+
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
+        }
+
+        trip.reviews.push({ user: req.user.username, comment });
+        await trip.save();
+
+        res.json({ reviews: trip.reviews }); // Respond with updated reviews
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+router.post('/edit/:id', async (req, res) => {
+    try {
+        const { tripName, destinations, public } = req.body;
+        await Trip.findByIdAndUpdate(req.params.id, {
+            tripName,
+            destinations: destinations.map(dest => ({
+                ...dest,
+                startDate: new Date(dest.startDate),
+                endDate: new Date(dest.endDate)
+            })),
+            public: public === 'on'
+        });
+        res.redirect(`/trips/my-trip/${req.params.id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Failed to update trip');
+    }
+});
+
 
 // Delete the entire trip (Big Plan)
 // Render detailed trip view for a specific trip ID (Big Plan + Destinations)
@@ -84,6 +146,16 @@ router.get('/my-trip/:id', authMiddleware, async (req, res) => {
         res.render('tripDetails', { trip });
     } catch (err) {
         res.status(500).send('Error fetching trip details');
+    }
+});
+// Fetch public trips for a specific country
+router.get('/public-trips', async (req, res) => {
+    try {
+        const publicTrips = await Trip.find({ public: true }).sort({ likes: -1 });
+        res.json(publicTrips); // Respond with the list of public trips
+    } catch (err) {
+        console.error('Error fetching public trips:', err.message);
+        res.status(500).json({ msg: 'Internal Server Error' });
     }
 });
 
@@ -183,6 +255,27 @@ router.get('/view/:id', authMiddleware, async (req, res) => {
     } catch (err) {
         console.error('Error fetching trip details:', err.message);
         res.status(500).json({ msg: 'Internal Server Error' });
+    }
+});
+router.get('/trips/my-trip/:id', async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id).lean(); // Ensure `.lean()` for plain JS objects
+        res.render('trip-details', { trip });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+router.get('/edit/:id', async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).send('Trip not found');
+        }
+        res.render('editTrip', { trip, tripId: req.params.id }); // Pass tripId to the view
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
     }
 });
 

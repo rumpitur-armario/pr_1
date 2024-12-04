@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -36,10 +36,9 @@
         }
 
         .container {
-            background-color: #fff;
+            background-color: #f0f2f5; /* Match the body's background color */
             padding: 40px;
             border-radius: 8px;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
             max-width: 1000px;
             width: 70%;
             margin: 40px auto;
@@ -118,6 +117,20 @@
             margin-top: auto;
             clear: both;
         }
+
+        /* Style for the checkbox and label */
+        .public-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .public-checkbox input[type="checkbox"] {
+            margin: 0;
+            width: 20px;
+            height: 20px;
+        }
     </style>
 </head>
 
@@ -183,6 +196,12 @@
             <div>
                 <label for="activities">Activities:</label>
                 <textarea id="activities" name="activities" placeholder="Enter activities separated by commas (e.g., sightseeing, hiking)" rows="3"></textarea>
+            </div>
+
+            <!-- New public checkbox -->
+            <div class="public-checkbox">
+                <input type="checkbox" id="isPublic" name="isPublic" value="true">
+                <label for="isPublic">Make this trip public</label>
             </div>
 
             <button type="button" id="addDestinationButton">Add Destination to Trip</button>
@@ -266,7 +285,7 @@
                         const countryData = data[selectedContinent][selectedRegion].find(c => c.name === selectedCountry);
                         if (countryData) {
                             const [lat, lon] = countryData.coordinates;
-                            map.setView([lat, lon], 5); // Zoom in to show the country area
+                            map.setView([lat, lon], 6); // Zoom in to show the country area
                         }
                     }
                 });
@@ -378,25 +397,31 @@ function addMarker(lat, lon) {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const activities = document.getElementById('activities').value;
-    
+        
             if (!continent || !country || !city || !startDate || !endDate) {
                 alert('Please fill in all required fields.');
                 return;
             }
-    
+        
+            const latLng = marker ? marker.getLatLng() : map.getCenter();
+        
             const newDestination = {
                 continent,
                 country,
                 city,
-                coordinates: marker ? marker.getLatLng() : map.getCenter(),
+                coordinates: {
+                    latitude: latLng.lat,
+                    longitude: latLng.lng
+                },
                 startDate,
                 endDate,
                 activities
             };
-    
+        
             destinations.push(newDestination);
             updateDestinationsList();
         });
+        
     
         // Update the UI with the added destinations
         function updateDestinationsList() {
@@ -412,39 +437,39 @@ function addMarker(lat, lon) {
     
         // Handle form submission to save the trip
         document.getElementById('addTripForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            
-            const tripName = document.getElementById('tripName').value;
+            e.preventDefault(); // Prevent default form submission behavior
         
+            const tripName = document.getElementById('tripName').value;
+            const isPublic = document.getElementById('isPublic').checked; // Capture the checkbox value
             const formData = {
                 tripName,
-                destinations
+                destinations, // Array of destinations
+                isPublic, // Public/Private flag
             };
         
-            // Log the data to check if it's correct
-            console.log('Sending trip data:', formData);
-        
-            // Make the request to save the trip data
             fetch('/trips/add', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData), // Send data as JSON
             })
                 .then(response => {
                     if (response.ok) {
-                        alert('Trip route added successfully!');
-                        window.location.href = '/trips/my-trip'; // Change this URL to redirect to 'my-trip' page
+                        // Redirect to "My Trips" page upon successful submission
+                        window.location.href = '/trips/my-trip';
                     } else {
-                        alert('Failed to add trip route. Please try again.');
+                        // Handle submission error
+                        alert('Failed to create trip. Please try again.');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
+                .catch(err => {
+                    console.error('Error submitting form:', err);
                     alert('An error occurred. Please try again.');
                 });
         });
+        
+        
+        
+        
         
         
         // Function to show error message
