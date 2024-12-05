@@ -159,7 +159,7 @@
                 <!-- Weather Information -->
                 <div id="weather"></div> <!-- Ensure this is present and correct -->
             </div>
-    
+            
             <!-- Map Section -->
             <div id="map"></div>
         </div>
@@ -310,6 +310,18 @@
             initMap();
             loadData();
         });
+        document.getElementById('bestTripPlan').addEventListener('click', () => {
+            const country = document.getElementById('country').value;
+            if (!country) {
+                alert('Please select a country.');
+                return;
+            }
+        
+            // Redirect to the new page
+            window.location.href = `/trips/public/${encodeURIComponent(country)}`;
+        });
+        
+        
     </script>
     
 </body>

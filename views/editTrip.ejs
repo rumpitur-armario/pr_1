@@ -3,247 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trip Details with Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <title>Edit Trip</title>
     <style>
-        /* General Layout and Styling */
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
+            min-height: 100vh;
         }
 
-        header {
+        .navbar {
+            background-color: #000;
+            color: #fff;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: black;
-            color: white;
-            padding: 15px 20px;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        header h1 a {
-            color: white;
-            text-decoration: none;
-        }
-
-        header nav a {
-            color: white;
+        .navbar a {
+            color: #fff;
             text-decoration: none;
             font-weight: bold;
-            margin-left: 15px;
         }
 
-        main {
-            flex: 1;
-            display: flex;
+        .container {
+            background-color: #f0f2f5;
+            padding: 40px;
+            border-radius: 8px;
+            max-width: 1000px;
+            width: 70%;
+            margin: 40px auto;
         }
 
-        .left-pane, .right-pane {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .left-pane {
-            border-right: 1px solid #ddd;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-
-        footer {
-            background-color: black;
-            color: white;
+        h1 {
             text-align: center;
-            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        select, input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 100%;
         }
 
         .destination-item {
-            margin-bottom: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        .edit-form {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .edit-form.active {
-            display: block;
-        }
-
-        .destination-item input,
-        .destination-item textarea {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            background-color: #fff;
         }
 
-        .edit-controls {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .trip-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .trip-header button {
-            background-color: yellow;
-            color: black;
+        .destination-item button {
+            margin-top: 10px;
+            background-color: #dc3545;
+            color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
-        .trip-header button:hover {
-            background-color: #ffc107;
+        .destination-item button:hover {
+            background-color: #c82333;
+        }
+
+        button {
+            padding: 15px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            align-self: center;
+            width: 50%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1><a href="/">Travel Plannerdddddd</a></h1>
+    <header class="navbar">
+        <div class="logo">
+            <a href="/">Travel Planner</a>
+        </div>
         <nav>
-            <a href="/trips/my-trip">Back to My Trips</a>
+            <a href="/trips/view">View Trips</a> |
+            <a href="/trips/add">Add Trip</a> |
             <a href="/auth/logout">Logout</a>
         </nav>
     </header>
 
-    <main>
-        <div class="left-pane">
-            <div class="trip-header">
-                <h2>Trip Details</h2>
-                <button id="editButton">Edit Trip</button>
-            </div>
-
-            <form id="editForm" class="edit-form" method="POST" action="/trips/edit/<%= trip._id %>">
+    <div class="container">
+        <h1>Edit Trip</h1>
+        <form id="editTripForm">
+            <div>
                 <label for="tripName">Trip Name:</label>
                 <input type="text" id="tripName" name="tripName" value="<%= trip.tripName %>" required>
+            </div>
 
-                <h3>Destinations</h3>
+            <h2>Destinations</h2>
+            <div id="destinationList">
                 <% trip.destinations.forEach((destination, index) => { %>
-                    <div class="destination-item">
-                        <label for="city-<%= index %>">City:</label>
-                        <input type="text" id="city-<%= index %>" name="destinations[<%= index %>][city]" value="<%= destination.city %>" required>
+                    <div class="destination-item" data-index="<%= index %>">
+                        <label for="continent-<%= index %>">Continent:</label>
+                        <select id="continent-<%= index %>" class="continent-dropdown" required>
+                            <option value="">Select Continent</option>
+                        </select>
+
+                        <label for="region-<%= index %>">Region:</label>
+                        <select id="region-<%= index %>" class="region-dropdown" required>
+                            <option value="">Select Region</option>
+                        </select>
 
                         <label for="country-<%= index %>">Country:</label>
-                        <input type="text" id="country-<%= index %>" name="destinations[<%= index %>][country]" value="<%= destination.country %>" required>
+                        <select id="country-<%= index %>" class="country-dropdown" required>
+                            <option value="">Select Country</option>
+                        </select>
+
+                        <label for="city-<%= index %>">City:</label>
+                        <input type="text" id="city-<%= index %>" value="<%= destination.city %>" required>
 
                         <label for="startDate-<%= index %>">Start Date:</label>
-                        <input type="date" id="startDate-<%= index %>" name="destinations[<%= index %>][startDate]" value="<%= destination.startDate.toISOString().split('T')[0] %>" required>
+                        <input type="date" id="startDate-<%= index %>" value="<%= destination.startDate.toISOString().split('T')[0] %>" required>
 
                         <label for="endDate-<%= index %>">End Date:</label>
-                        <input type="date" id="endDate-<%= index %>" name="destinations[<%= index %>][endDate]" value="<%= destination.endDate.toISOString().split('T')[0] %>" required>
-                    </div>
-                <% }); %>
+                        <input type="date" id="endDate-<%= index %>" value="<%= destination.endDate.toISOString().split('T')[0] %>" required>
 
-                <label for="public">Make Trip Public:</label>
-                <input type="checkbox" id="public" name="public" <%= trip.public ? 'checked' : '' %>>
-
-                <div class="edit-controls">
-                    <button type="submit">Save Changes</button>
-                    <button type="button" id="cancelEdit">Cancel</button>
-                </div>
-            </form>
-
-            <h3>Destinations</h3>
-            <div id="destination-list">
-                <% trip.destinations.forEach(destination => { %>
-                    <div class="destination-item">
-                        <h4><%= destination.city %>, <%= destination.country %></h4>
-                        <p><strong>Planned Dates:</strong> 
-                            <% if (destination.startDate && destination.endDate) { %>
-                                <%= new Date(destination.startDate).toLocaleDateString() %> - <%= new Date(destination.endDate).toLocaleDateString() %>
-                            <% } else { %>
-                                No dates provided
-                            <% } %>
-                        </p>
+                        <button type="button" onclick="removeDestination(<%= index %>)">Remove</button>
                     </div>
                 <% }); %>
             </div>
-        </div>
 
-        <div class="right-pane">
-            <div id="map"></div>
-        </div>
-    </main>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
 
-    <footer>
-        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
-    </footer>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // State persistence for back navigation
-        window.onpageshow = function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        };
-
-        // Toggle Edit Form
-        const editButton = document.getElementById('editButton');
-        const editForm = document.getElementById('editForm');
-        const cancelEdit = document.getElementById('cancelEdit');
-
-        editButton.addEventListener('click', () => {
-            editForm.classList.add('active');
-            editButton.style.display = 'none';
-            sessionStorage.setItem('editFormActive', 'true');
-        });
-
-        cancelEdit.addEventListener('click', () => {
-            editForm.classList.remove('active');
-            editButton.style.display = 'block';
-            sessionStorage.removeItem('editFormActive');
-        });
-
-        // Restore edit form state on page load
-        const isEditFormActive = sessionStorage.getItem('editFormActive') === 'true';
-        if (isEditFormActive) {
-            editForm.classList.add('active');
-            editButton.style.display = 'none';
+        async function loadLocations() {
+            const response = await fetch('/data/locations.json');
+            return response.json();
         }
 
-        // Initialize the map
-        const map = L.map('map').setView([0, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        function populateDropdowns(locations, destination, index) {
+            const continentSelect = document.getElementById(`continent-${index}`);
+            const regionSelect = document.getElementById(`region-${index}`);
+            const countrySelect = document.getElementById(`country-${index}`);
 
-        const destinationElements = document.querySelectorAll('.destination-item');
-        const latlngs = Array.from(destinationElements).map(dest => [
-            parseFloat(dest.dataset.lat),
-            parseFloat(dest.dataset.lon)
-        ]);
+            // Populate continents
+            Object.keys(locations).forEach(continent => {
+                const option = document.createElement('option');
+                option.value = continent;
+                option.textContent = continent;
+                continentSelect.appendChild(option);
+            });
 
-        latlngs.forEach(latlng => {
-            if (latlng[0] && latlng[1]) {
-                L.marker(latlng).addTo(map);
-            }
+            // Set initial continent
+            continentSelect.value = destination.continent;
+            continentSelect.dispatchEvent(new Event('change'));
+
+            // Populate regions based on selected continent
+            continentSelect.addEventListener('change', () => {
+                regionSelect.innerHTML = '<option value="">Select Region</option>';
+                countrySelect.innerHTML = '<option value="">Select Country</option>';
+
+                const selectedContinent = continentSelect.value;
+                if (locations[selectedContinent]) {
+                    Object.keys(locations[selectedContinent]).forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region;
+                        option.textContent = region;
+                        regionSelect.appendChild(option);
+                    });
+                }
+            });
+
+            // Populate countries based on selected region
+            regionSelect.addEventListener('change', () => {
+                countrySelect.innerHTML = '<option value="">Select Country</option>';
+
+                const selectedContinent = continentSelect.value;
+                const selectedRegion = regionSelect.value;
+                if (locations[selectedContinent] && locations[selectedContinent][selectedRegion]) {
+                    locations[selectedContinent][selectedRegion].forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.name;
+                        option.textContent = country.name;
+                        countrySelect.appendChild(option);
+                    });
+                }
+            });
+
+            // Set initial region and country
+            regionSelect.value = destination.region;
+            regionSelect.dispatchEvent(new Event('change'));
+            setTimeout(() => (countrySelect.value = destination.country), 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const locations = await loadLocations();
+            document.querySelectorAll('.destination-item').forEach((item, index) => {
+                const destination = {
+                    continent: item.querySelector(`#continent-${index}`).dataset.value,
+                    region: item.querySelector(`#region-${index}`).dataset.value,
+                    country: item.querySelector(`#country-${index}`).dataset.value,
+                };
+                populateDropdowns(locations, destination, index);
+            });
         });
 
-        if (latlngs.length > 0) {
-            map.fitBounds(latlngs);
+        function removeDestination(index) {
+            document.querySelector(`.destination-item[data-index="${index}"]`).remove();
         }
     </script>
 </body>

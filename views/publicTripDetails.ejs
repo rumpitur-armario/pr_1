@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Trip Details with Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.polylineDecorator/1.6.0/leaflet.polylineDecorator.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: black;
+            color: white;
+            padding: 15px 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+        }
+
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .trip-details {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .trip-details h2 {
+            margin: 0 0 15px;
+        }
+
+        .destination-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        footer {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="/">Travel Planner</a></h1>
+        <nav>
+            <a href="/trips/my-trip">Back to My Trips</a>
+            <a href="/auth/logout">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="trip-details">
+            <h2><%= trip.tripName %></h2>
+            <p><strong>Created by:</strong> <%= trip.creator %></p>
+            <p><strong>Public:</strong> Yes</p>
+
+            <h3>Destinations</h3>
+            <% trip.destinations.forEach(destination => { %>
+                <div class="destination-item" data-lat="<%= destination.coordinates.latitude %>" data-lon="<%= destination.coordinates.longitude %>">
+                    <h4><%= destination.city %>, <%= destination.country %></h4>
+                    <p><strong>Planned Dates:</strong> 
+                        <%= new Date(destination.startDate).toLocaleDateString() %> - 
+                        <%= new Date(destination.endDate).toLocaleDateString() %>
+                    </p>
+                    <p><strong>Activities:</strong> <%= destination.activities.join(', ') || 'No activities planned' %></p>
+                </div>
+            <% }); %>
+        </div>
+
+        <div class="map-container" id="map"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map', {
+            worldCopyJump: false,
+            maxBounds: [[-90, -180], [90, 180]],
+            maxBoundsViscosity: 1.0,
+            minZoom: 2
+        }).setView([0, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            minZoom: 2,
+            noWrap: true
+        }).addTo(map);
+
+        // Add markers and polyline
+        const destinations = <%- JSON.stringify(trip.destinations) %>;
+        const latLngPoints = [];
+
+        destinations.forEach(dest => {
+            if (!isNaN(dest.coordinates.latitude) && !isNaN(dest.coordinates.longitude)) {
+                const marker = L.marker([dest.coordinates.latitude, dest.coordinates.longitude]).addTo(map);
+                marker.bindPopup(`<strong>${dest.city}, ${dest.country}</strong>`);
+                latLngPoints.push([dest.coordinates.latitude, dest.coordinates.longitude]);
+            }
+        });
+
+        if (latLngPoints.length === 1) {
+            map.setView(latLngPoints[0], 10);
+        } else if (latLngPoints.length > 1) {
+            const polyline = L.polyline(latLngPoints, { color: 'blue', weight: 3 }).addTo(map);
+            L.polylineDecorator(polyline, {
+                patterns: [
+                    {
+                        offset: '25%',
+                        repeat: '50%',
+                        symbol: L.Symbol.arrowHead({
+                            pixelSize: 10,
+                            pathOptions: { fillOpacity: 1, color: 'red' }
+                        })
+                    }
+                ]
+            }).addTo(map);
+            map.fitBounds(polyline.getBounds());
+        }
+    </script>
+</body>
+</html>

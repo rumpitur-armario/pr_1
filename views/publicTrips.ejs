@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Trip Plans for <%= country %></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: black;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .trip-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .trip-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .trip-item h4 {
+            margin: 0 0 10px;
+        }
+
+        .trip-item p {
+            margin: 5px 0;
+        }
+
+        .trip-item button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .trip-item button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Public Trip Plans for <%= country %></h1>
+        <a href="/">Home</a>
+        <a href="/trips/view">View My Trips</a>
+    </header>
+    <main>
+        <h2>Explore Public Trip Plans</h2>
+        <% if (publicTrips.length > 0) { %>
+            <div class="trip-list">
+                <% publicTrips.forEach(trip => { %>
+                    <div class="trip-item">
+                        <h4><%= trip.tripName %></h4>
+                        <p><strong>Destinations:</strong> 
+                            <%= trip.destinations.map(dest => `${dest.city}, ${dest.country}`).join(', ') %>
+                        </p>
+                        <p><strong>Likes:</strong> <%= trip.likes %></p>
+                        <button onclick="viewTrip('<%= trip._id %>')">View Trip</button>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p>No public trips found for <%= country %>.</p>
+        <% } %>
+    </main>
+    <script>
+        function viewTrip(tripId) {
+            window.location.href = `/trips/details/${tripId}`;
+        }
+    </script>
+</body>
+</html>

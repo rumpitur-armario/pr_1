@@ -278,5 +278,45 @@ router.get('/edit/:id', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+// Route to fetch public trip plans by country
+// Route to render the public trips page for a specific country
+router.get('/public/:country', async (req, res) => {
+    const { country } = req.params;
+    try {
+        const publicTrips = await Trip.find({
+            'destinations.country': country,
+            public: true
+        }).sort({ likes: -1 }); // Sort by likes
+
+        res.render('publicTrips', { country, publicTrips });
+    } catch (error) {
+        console.error('Error fetching public trips:', error);
+        res.status(500).send('Failed to load public trips');
+    }
+});
+// Route to get trip details
+router.get('/detail/:id', async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id).populate('user');
+        if (!trip) {
+            return res.status(404).send('Trip not found');
+        }
+
+        const isOwner = req.user && trip.user._id.toString() === req.user._id.toString();
+
+        if (isOwner) {
+            // Render editable trip details for the owner
+            res.render('tripDetails', { trip });
+        } else {
+            // Render public trip details for other users
+            res.render('publicTripDetails', { trip });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+
 
 module.exports = router;

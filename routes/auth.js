@@ -111,25 +111,24 @@ router.post('/login', async (req, res) => {
 
 
 // User Logout
-router.post('/logout', async (req, res) => {
-    try {
-        // Clear the token from the session
-        req.session.token = null;
- 
-        // Optionally, delete the token from the database if you are storing tokens
-        const authHeader = req.header('Authorization');
-        if (authHeader) {
-            const token = authHeader.split(' ')[1];
-            await Token.findOneAndDelete({ token: token });
+// Logout route
+// Logout route
+router.get('/auth/logout', (req, res) => {
+    // If using session-based authentication
+    req.logout((err) => {
+        if (err) {
+            console.error('Logout error:', err);
+            return res.status(500).send('Failed to logout');
         }
- 
-        res.json({ msg: 'Logged out successfully' });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ msg: 'Server error' });
-    }
- });
- 
+        res.redirect('/'); // Redirect to the home page
+    });
+
+    // If using token-based authentication
+    // Clear any client-side stored tokens or cookies
+    res.clearCookie('token'); // Replace 'token' with the name of your cookie, if applicable
+    res.redirect('/'); // Redirect to the home page
+});
+
 
 
 module.exports = router;
