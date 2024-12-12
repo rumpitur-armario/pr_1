@@ -30,9 +30,10 @@
             font-size: 24px;
         }
 
-        header h1 a {
+        header h1 span {
             color: white;
             text-decoration: none;
+            cursor: default;
         }
 
         header nav a {
@@ -101,10 +102,10 @@
 </head>
 <body>
     <header>
-        <h1><a href="/">Travel Planner</a></h1>
+        <h1><span>Travel Planner</span></h1>
         <nav>
             <a href="/trips/my-trip">Back to My Trips</a>
-            <a href="/auth/logout">Logout</a>
+            <a href="/">Logout</a>
         </nav>
     </header>
 
@@ -126,6 +127,13 @@
                                 <%= new Date(destination.startDate).toLocaleDateString() %> - <%= new Date(destination.endDate).toLocaleDateString() %>
                             <% } else { %>
                                 No dates provided
+                            <% } %>
+                        </p>
+                        <p><strong>Activities:</strong> 
+                            <% if (destination.activities && destination.activities.length > 0) { %>
+                                <%= destination.activities.join(', ') %>
+                            <% } else { %>
+                                No activities provided
                             <% } %>
                         </p>
                     </div>
@@ -157,6 +165,9 @@
     
         // Function to update the map with markers and polylines
         function updateMap(destinations) {
+            console.log('Destinations data:', destinations); // Debugging data
+    
+            // Clear existing markers and polylines
             map.eachLayer(layer => {
                 if (layer instanceof L.Marker || layer instanceof L.Polyline) {
                     map.removeLayer(layer);
@@ -166,10 +177,12 @@
             const latLngPoints = [];
     
             destinations.forEach(dest => {
-                if (!isNaN(dest.coordinates.latitude) && !isNaN(dest.coordinates.longitude)) {
+                if (dest.coordinates && !isNaN(dest.coordinates.latitude) && !isNaN(dest.coordinates.longitude)) {
                     const marker = L.marker([dest.coordinates.latitude, dest.coordinates.longitude]).addTo(map);
-                    marker.bindPopup(`<strong>${dest.city}, ${dest.country}</strong>`);
+                    marker.bindPopup(`<strong>${dest.city}, ${dest.country}</strong><br><strong>Activities:</strong> ${dest.activities.join(', ') || 'None'}`);
                     latLngPoints.push([dest.coordinates.latitude, dest.coordinates.longitude]);
+                } else {
+                    console.warn('Invalid or missing coordinates for destination:', dest);
                 }
             });
     
@@ -205,7 +218,12 @@
                 const response = await fetch(`/trips/${tripId}`);
                 if (response.ok) {
                     const trip = await response.json();
-                    updateMap(trip.destinations); // Update map with fetched destinations
+                    console.log('Fetched Trip Data:', trip); // Debug fetched trip data
+                    if (trip.destinations && trip.destinations.length > 0) {
+                        updateMap(trip.destinations); // Update map with fetched destinations
+                    } else {
+                        console.error('No destinations found in trip data:', trip);
+                    }
                 } else {
                     console.error('Failed to fetch trip details.');
                 }
@@ -218,5 +236,5 @@
         loadTrip();
     </script>
     
-</body>
+    
 </html>

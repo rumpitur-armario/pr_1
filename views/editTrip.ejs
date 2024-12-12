@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,21 +24,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
         }
 
         .navbar a {
             color: #fff;
             text-decoration: none;
             font-weight: bold;
+            margin-left: 15px;
         }
 
         .container {
-            background-color: #f0f2f5;
+            background-color: #fff;
             padding: 40px;
             border-radius: 8px;
-            max-width: 1000px;
-            width: 70%;
+            max-width: 600px;
             margin: 40px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -56,7 +65,7 @@
             margin-bottom: 5px;
         }
 
-        select, input {
+        input, textarea {
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #ccc;
@@ -69,21 +78,11 @@
             padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #fff;
+            background-color: #f9f9f9;
         }
 
-        .destination-item button {
-            margin-top: 10px;
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .destination-item button:hover {
-            background-color: #c82333;
+        .destination-item p {
+            margin: 0 0 10px;
         }
 
         button {
@@ -105,15 +104,14 @@
         }
     </style>
 </head>
+
 <body>
     <header class="navbar">
-        <div class="logo">
-            <a href="/">Travel Planner</a>
-        </div>
+        <h1>Travel Planner</h1>
         <nav>
             <a href="/trips/view">View Trips</a> |
             <a href="/trips/add">Add Trip</a> |
-            <a href="/auth/logout">Logout</a>
+            <a href="/">Logout</a>
         </nav>
     </header>
 
@@ -124,120 +122,67 @@
                 <label for="tripName">Trip Name:</label>
                 <input type="text" id="tripName" name="tripName" value="<%= trip.tripName %>" required>
             </div>
-
+        
             <h2>Destinations</h2>
             <div id="destinationList">
                 <% trip.destinations.forEach((destination, index) => { %>
                     <div class="destination-item" data-index="<%= index %>">
-                        <label for="continent-<%= index %>">Continent:</label>
-                        <select id="continent-<%= index %>" class="continent-dropdown" required>
-                            <option value="">Select Continent</option>
-                        </select>
-
-                        <label for="region-<%= index %>">Region:</label>
-                        <select id="region-<%= index %>" class="region-dropdown" required>
-                            <option value="">Select Region</option>
-                        </select>
-
-                        <label for="country-<%= index %>">Country:</label>
-                        <select id="country-<%= index %>" class="country-dropdown" required>
-                            <option value="">Select Country</option>
-                        </select>
-
-                        <label for="city-<%= index %>">City:</label>
-                        <input type="text" id="city-<%= index %>" value="<%= destination.city %>" required>
-
-                        <label for="startDate-<%= index %>">Start Date:</label>
-                        <input type="date" id="startDate-<%= index %>" value="<%= destination.startDate.toISOString().split('T')[0] %>" required>
-
-                        <label for="endDate-<%= index %>">End Date:</label>
-                        <input type="date" id="endDate-<%= index %>" value="<%= destination.endDate.toISOString().split('T')[0] %>" required>
-
-                        <button type="button" onclick="removeDestination(<%= index %>)">Remove</button>
+                        <h4><%= destination.city %>, <%= destination.country %></h4>
+                        
+                        <!-- Preserve existing fields -->
+                        <input type="hidden" name="destinations[<%= index %>].continent" value="<%= destination.continent %>">
+                        <input type="hidden" name="destinations[<%= index %>].region" value="<%= destination.region %>">
+                        <input type="hidden" name="destinations[<%= index %>].country" value="<%= destination.country %>">
+                        <input type="hidden" name="destinations[<%= index %>].city" value="<%= destination.city %>">
+                        <input type="hidden" name="destinations[<%= index %>].coordinates.latitude" value="<%= destination.coordinates.latitude %>">
+                        <input type="hidden" name="destinations[<%= index %>].coordinates.longitude" value="<%= destination.coordinates.longitude %>">
+        
+                        <!-- Editable activities -->
+                        <label for="activities-<%= index %>">Activities:</label>
+                        <textarea id="activities-<%= index %>" name="destinations[<%= index %>].activities" required>
+                            <%= destination.activities.filter(activity => activity.trim() !== '').join(', ') %>
+                        </textarea>
+                        
                     </div>
                 <% }); %>
             </div>
-
+        
             <button type="submit">Save Changes</button>
         </form>
+        
     </div>
 
     <script>
-        async function loadLocations() {
-            const response = await fetch('/data/locations.json');
-            return response.json();
-        }
+        document.getElementById('editTripForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        function populateDropdowns(locations, destination, index) {
-            const continentSelect = document.getElementById(`continent-${index}`);
-            const regionSelect = document.getElementById(`region-${index}`);
-            const countrySelect = document.getElementById(`country-${index}`);
+            const tripName = document.getElementById('tripName').value;
+            const destinations = Array.from(document.querySelectorAll('.destination-item')).map((item, index) => ({
+                activities: document.getElementById(`activities-${index}`).value.split(',').map(activity => activity.trim())
+            }));
 
-            // Populate continents
-            Object.keys(locations).forEach(continent => {
-                const option = document.createElement('option');
-                option.value = continent;
-                option.textContent = continent;
-                continentSelect.appendChild(option);
-            });
+            const formData = { tripName, destinations };
 
-            // Set initial continent
-            continentSelect.value = destination.continent;
-            continentSelect.dispatchEvent(new Event('change'));
+            try {
+                const response = await fetch(`/trips/edit/<%= trip._id %>`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-            // Populate regions based on selected continent
-            continentSelect.addEventListener('change', () => {
-                regionSelect.innerHTML = '<option value="">Select Region</option>';
-                countrySelect.innerHTML = '<option value="">Select Country</option>';
-
-                const selectedContinent = continentSelect.value;
-                if (locations[selectedContinent]) {
-                    Object.keys(locations[selectedContinent]).forEach(region => {
-                        const option = document.createElement('option');
-                        option.value = region;
-                        option.textContent = region;
-                        regionSelect.appendChild(option);
-                    });
+                if (response.ok) {
+                    window.location.href = '/trips/my-trip';
+                } else {
+                    alert('Failed to save changes. Please try again.');
                 }
-            });
-
-            // Populate countries based on selected region
-            regionSelect.addEventListener('change', () => {
-                countrySelect.innerHTML = '<option value="">Select Country</option>';
-
-                const selectedContinent = continentSelect.value;
-                const selectedRegion = regionSelect.value;
-                if (locations[selectedContinent] && locations[selectedContinent][selectedRegion]) {
-                    locations[selectedContinent][selectedRegion].forEach(country => {
-                        const option = document.createElement('option');
-                        option.value = country.name;
-                        option.textContent = country.name;
-                        countrySelect.appendChild(option);
-                    });
-                }
-            });
-
-            // Set initial region and country
-            regionSelect.value = destination.region;
-            regionSelect.dispatchEvent(new Event('change'));
-            setTimeout(() => (countrySelect.value = destination.country), 500);
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const locations = await loadLocations();
-            document.querySelectorAll('.destination-item').forEach((item, index) => {
-                const destination = {
-                    continent: item.querySelector(`#continent-${index}`).dataset.value,
-                    region: item.querySelector(`#region-${index}`).dataset.value,
-                    country: item.querySelector(`#country-${index}`).dataset.value,
-                };
-                populateDropdowns(locations, destination, index);
-            });
+            } catch (error) {
+                console.error('Error saving trip:', error);
+                alert('An error occurred. Please try again.');
+            }
         });
-
-        function removeDestination(index) {
-            document.querySelector(`.destination-item[data-index="${index}"]`).remove();
-        }
     </script>
 </body>
+
 </html>

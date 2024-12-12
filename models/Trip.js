@@ -26,7 +26,8 @@ destinationSchema.pre('validate', function (next) {
 const tripSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     tripName: { type: String, required: true },
-    destinations: [destinationSchema], // Use detailed destination schema
+    destinations: [destinationSchema],
+    activities: { type: [String], default: [] }, // Use detailed destination schema
     public: { type: Boolean, default: false }, // Public trip flag
     likes: { type: Number, default: 0 } // Number of likes for the trip
 });

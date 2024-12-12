@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<<html lang="en">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -9,12 +9,16 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* Reset margin and padding */
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f2f5;
             color: #333;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -27,6 +31,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 60px; /* Match the height */
+            box-sizing: border-box; /* Ensure padding is included in height */
         }
 
         .navbar a {
@@ -36,13 +42,12 @@
         }
 
         .container {
-            background-color: #f0f2f5; /* Match the body's background color */
+            background-color: #f0f2f5;
             padding: 40px;
             border-radius: 8px;
             max-width: 1000px;
             width: 70%;
             margin: 40px auto;
-            position: relative;
         }
 
         h1 {
@@ -61,9 +66,7 @@
             margin-bottom: 5px;
         }
 
-        input,
-        select,
-        textarea {
+        select, input, textarea {
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #ccc;
@@ -137,12 +140,12 @@
 <body>
     <header class="navbar">
         <div class="logo">
-            <a href="/">Travel Planner</a>
+            <h1>Travel Planner</h1>
         </div>
         <nav>
             <a href="/trips/view">View Trips</a> |
             <a href="/trips/add">Add Trip</a> |
-            <a href="/auth/logout">Logout</a>
+            <a href="/">Logout</a>
         </nav>
     </header>
 
@@ -440,10 +443,12 @@ function addMarker(lat, lon) {
             e.preventDefault(); // Prevent default form submission behavior
         
             const tripName = document.getElementById('tripName').value;
-            const isPublic = document.getElementById('isPublic').checked; // Capture the checkbox value
+            const isPublic = document.getElementById('isPublic').checked;
+            const activities = document.getElementById('activities').value.trim(); // Capture the checkbox value
             const formData = {
                 tripName,
-                destinations, // Array of destinations
+                destinations,
+                activities, // Array of destinations
                 isPublic, // Public/Private flag
             };
         

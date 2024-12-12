@@ -16,6 +16,10 @@ router.get('/view', authMiddleware, async (req, res) => {
 
 // Show the list of user's trips in the "My Trip" page
 router.get('/my-trip', authMiddleware, async (req, res) => {
+    if (!req.user) {
+        return res.redirect('/'); // Redirect to the homepage if not logged in
+    }
+
     try {
         const trips = await Trip.find({ user: req.user.id });
         res.render('myTrip', { trips });
@@ -23,6 +27,7 @@ router.get('/my-trip', authMiddleware, async (req, res) => {
         res.status(500).send('Error fetching trips');
     }
 });
+
 // Fetch public trips for specific continent, region, and country
 router.get('/public-trips', async (req, res) => {
     const { continent, region, country } = req.query;
@@ -61,6 +66,7 @@ router.post('/add', authMiddleware, async (req, res) => {
             user: req.user.id,
             tripName,
             destinations,
+            activities: req.body.activities ? req.body.activities.split(',').map(activity => activity.trim()) : [],
             public: Boolean(isPublic), // Save the public flag as true/false
         });
 
@@ -161,6 +167,37 @@ router.get('/public-trips', async (req, res) => {
 
 
 // Edit a destination (City/Country)
+
+router.put('/edit/:id', async (req, res) => {
+    const { id } = req.params;
+    const { tripName, destinations } = req.body;
+
+    try {
+        const existingTrip = await Trip.findById(id);
+        if (!existingTrip) {
+            return res.status(404).send({ error: 'Trip not found' });
+        }
+
+        existingTrip.tripName = tripName;
+
+        existingTrip.destinations = existingTrip.destinations.map((existingDestination, index) => {
+            const updatedDestination = destinations[index] || {};
+            return {
+                ...existingDestination._doc,
+                activities: (updatedDestination.activities || existingDestination.activities)
+                    .filter(activity => activity.trim() !== ''), // Remove blank activities
+            };
+        });
+
+        await existingTrip.save();
+        res.status(200).send({ message: 'Trip updated successfully' });
+    } catch (error) {
+        console.error('Error updating trip:', error);
+        res.status(500).send({ error: 'Failed to update trip' });
+    }
+});
+
+
 router.put('/my-trip/:tripId/destination/:destinationId', authMiddleware, async (req, res) => {
     try {
         const trip = await Trip.findById(req.params.tripId);
@@ -297,7 +334,7 @@ router.get('/public/:country', async (req, res) => {
 // Route to get trip details
 router.get('/detail/:id', async (req, res) => {
     try {
-        const trip = await Trip.findById(req.params.id).populate('user');
+        const trip = await Trip.findById(req.params.id).populate('user', 'username email'); // Adjust fields as needed
         if (!trip) {
             return res.status(404).send('Trip not found');
         }
@@ -305,10 +342,8 @@ router.get('/detail/:id', async (req, res) => {
         const isOwner = req.user && trip.user._id.toString() === req.user._id.toString();
 
         if (isOwner) {
-            // Render editable trip details for the owner
             res.render('tripDetails', { trip });
         } else {
-            // Render public trip details for other users
             res.render('publicTripDetails', { trip });
         }
     } catch (err) {

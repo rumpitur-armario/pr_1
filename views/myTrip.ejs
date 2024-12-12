@@ -29,9 +29,10 @@
         font-size: 24px;
     }
     
-    header h1 a {
+    header h1 span {
         color: white;
         text-decoration: none;
+        cursor: default;
     }
     
     header nav {
@@ -175,12 +176,12 @@
 </head>
 <body>
     <header>
-        <h1><a href="/">Travel Planner</a></h1>
+        <h1><span>Travel Planner</span></h1>
         <nav>
             <a href="/trips/view">View Trips</a> |
             <a href="/trips/my-trip">My Trip</a> |
             <a href="/trips/add">Add Trip</a> |
-            <a href="/auth/logout">Logout</a>
+            <a href="/">Logout</a>
         </nav>
     </header>
 
@@ -202,38 +203,35 @@
                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-decoration: none; color: inherit; z-index: 1;"></a>
                         
                         <!-- Content (still clickable but avoids z-index issues) -->
-                        <h3 style="position: relative; z-index: 2;"><%= trip.tripName %></h3>
-                        <p style="position: relative; z-index: 2;"><strong>Destinations:</strong> 
-                            <% if (trip.destinations.length > 0) { %>
-                                <%= trip.destinations.map(dest => `${dest.country}(${dest.city})`).join(', ') %>
-                            <% } else { %>
-                                Not specified
-                            <% } %>
-                        </p>
-                        <p style="position: relative; z-index: 2;"><strong>Date:</strong> 
-                            <% if (trip.startDate && trip.endDate) { %>
-                                <%= new Date(trip.startDate).toLocaleDateString() %> - <%= new Date(trip.endDate).toLocaleDateString() %>
-                            <% } else { %>
-                                Not specified
-                            <% } %>
-                        </p>
-                        
-                        <p style="position: relative; z-index: 2;"><strong>Activities:</strong></p>
+                        <p style="position: relative; z-index: 2;"><strong>Destinations:</strong></p>
                         <ul style="position: relative; z-index: 2;">
-                            <% if (trip.activities && trip.activities.length > 0) { %>
-                                <% trip.activities.forEach(activity => { %>
-                                    <li><%= activity %></li>
+                            <% if (trip.destinations && trip.destinations.length > 0) { %>
+                                <% trip.destinations.forEach(destination => { %>
+                                    <li>
+                                        <strong><%= destination.city %>, <%= destination.country %></strong>
+                                        <% if (destination.activities && destination.activities.length > 0) { %>
+                                            <ul>
+                                                <% destination.activities.forEach(activity => { %>
+                                                    <li><%= activity %></li>
+                                                <% }); %>
+                                            </ul>
+                                        <% } else { %>
+                                            <p>No activities planned for this destination</p>
+                                        <% } %>
+                                    </li>
                                 <% }); %>
                             <% } else { %>
-                                <li>No activities planned</li>
+                                <li>No destinations added yet</li>
                             <% } %>
                         </ul>
+                        
+                    
                         
                         <!-- Details and Delete Buttons -->
                         <div style="position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                             <a href="/trips/my-trip/<%= trip._id %>" 
                                style="padding: 10px 20px; background-color:  #0000FF; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background-color 0.3s ease;">
-                               Views
+                               View
                             </a>
                             <% if (trip.public) { %>
                                 <span style="font-weight: bold; color: green;">Public</span>
@@ -248,7 +246,6 @@
                             </form>
                         </div>
                     </div>
-                    
                 <% }); %>
             <% } else { %>
                 <p>You have no trips planned yet!</p>
