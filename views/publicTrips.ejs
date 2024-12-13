@@ -10,23 +10,55 @@
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         header {
             background-color: black;
             color: white;
-            padding: 15px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        header a {
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        header nav a {
             color: white;
             text-decoration: none;
-            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        header nav a:hover {
+            text-decoration: underline;
         }
 
         main {
-            padding: 20px;
+            flex: 1;
+            padding: 30px 40px;
+        }
+
+        footer {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 14px;
         }
 
         .trip-list {
@@ -64,16 +96,26 @@
         .trip-item button:hover {
             background-color: #0056b3;
         }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Public Trip Plans for <%= country %></h1>
-        <a href="/">Home</a>
-        <a href="/trips/view">View My Trips</a>
+        <h1>Travel Planner</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/auth/login">Login</a>
+            <a href="/auth/register">Sign Up</a>
+        </nav>
     </header>
+
     <main>
-        <h2>Explore Public Trip Plans</h2>
+        <h2>Public Trip Plans for <%= country %></h2>
         <% if (publicTrips.length > 0) { %>
             <div class="trip-list">
                 <% publicTrips.forEach(trip => { %>
@@ -91,6 +133,11 @@
             <p>No public trips found for <%= country %>.</p>
         <% } %>
     </main>
+
+    <footer>
+        <p>&copy; 2024 Travel Planner. All rights reserved.</p>
+    </footer>
+
     <script>
         function viewTrip(tripId) {
             window.location.href = `/trips/detail/${tripId}`;
